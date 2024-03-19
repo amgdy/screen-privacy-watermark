@@ -13,6 +13,10 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+  security-events: write
+
 env:
   VERSION: ${{ github.event.inputs.Version }}
   SELF_CONTAINED: ${{ github.event.inputs.SelfContained }}
@@ -22,17 +26,25 @@ jobs:
     runs-on: windows-2022
     env:
       APP_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj
-      APP_PROJECT_OUTPUT: ${RUNNER_TEMP}/app
+      APP_PROJECT_OUTPUT: temp/app
       MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Setup/Magdys.ScreenPrivacyWatermark.Setup.wixproj
-      MSI_PROJECT_OUTPUT: ${RUNNER_TEMP}/msi
+      MSI_PROJECT_OUTPUT: temp/msi
       MSI_FILE_NAME: SPW-${{github.event.inputs.Version}}-Setup
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup envs
+        run: |
+          echo "APP_PROJECT_OUTPUT=${{ runner.temp }}/app" >> $GITHUB_ENV
+          echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}/msi" >> $GITHUB_ENV
+
       - name: List All env
         run: Get-ChildItem env:* | Sort-Object -Property Name
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
 
       - name: Setup .NET 8
         if: false
