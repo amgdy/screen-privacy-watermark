@@ -1,10 +1,6 @@
 name: Build & Deploy
 
 on:
-  push:
-    branches:
-      - "main"
-
   workflow_dispatch:
     inputs:
       Version:
@@ -26,9 +22,10 @@ jobs:
     runs-on: windows-2022
     env:
       APP_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj
-      #APP_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/app
+      APP_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/app
       MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Msi/Magdys.ScreenPrivacyWatermark.Msi.wixproj
-      #MSI_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/msi
+      MSI_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/msi
+      MSI_FILE_NAME: SPW-${{vars.VERSION}}-Setup
 
     steps:
       - name: Checkout code
@@ -43,4 +40,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish App with .NET
-        run: dotnet publish src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj -c=Release -o=${{env.RUNNER_TEMP}}/app --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
+        if: ${{ github.event.inputs.SelfContained == false }}
+        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
+
+      - name: Publish App with .NET (Self-contained)
+        if: ${{ github.event.inputs.SelfContained == true }}
+        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}}/app --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true
+
+      - name: Set up Wix v4
+        run: dotnet tool install --global wix
+
+      - name: Build MSI
+        run: dotnet msbuild ${{env.MSI_PROJECT_PATH}} -p:Configuration=Release -p:OutputPath=${{env.MSI_PROJECT_PATH}} -p:OutputName=${{env.MSI_FILE_NAME}}
