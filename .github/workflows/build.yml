@@ -38,8 +38,8 @@ jobs:
 
       - name: Setup envs
         run: |
-          echo "APP_PROJECT_OUTPUT=${{ runner.temp }}/app" >> $GITHUB_ENV
-          echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}/msi" >> $GITHUB_ENV
+          echo "APP_PROJECT_OUTPUT=${{ runner.temp }}/app" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}/msi" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: List All env
         run: Get-ChildItem env:* | Sort-Object -Property Name
