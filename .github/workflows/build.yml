@@ -20,7 +20,6 @@ on:
 env:
   VERSION: ${{ github.event.inputs.Version }}
   SELF_CONTAINED: ${{ github.event.inputs.SelfContained }}
-  
 
 jobs:
   build:
@@ -30,7 +29,7 @@ jobs:
       #APP_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/app
       MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Msi/Magdys.ScreenPrivacyWatermark.Msi.wixproj
       #MSI_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/msi
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -44,4 +43,4 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish App with .NET
-        run: dotnet publish src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj -c=Release -o=$RUNNER_TEMP/app --p:FileVersion=$VERSION --p:AssemblyVersion=$VERSION --p:Version=$VERSION
+        run: dotnet publish src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj -c=Release -o=${{env.RUNNER_TEMP}}/app --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
