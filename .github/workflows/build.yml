@@ -34,21 +34,25 @@ jobs:
       - name: List All env
         run: Get-ChildItem env:* | Sort-Object -Property Name
 
-      - name: Set up .NET 8
+      - name: Setup .NET 8
+        if: false
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
 
-      - name: Publish App with .NET
+      - name: Build App
         if: ${{ github.event.inputs.SelfContained == 'false' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
 
-      - name: Publish App with .NET (Self-contained)
+      - name: Build App (Self-contained)
         if: ${{ github.event.inputs.SelfContained == 'true' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}}/app --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true
 
-      - name: Set up Wix v4
+      - name: Setup Wix v4
         run: dotnet tool install --global wix
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
 
       - name: Build MSI
         run: msbuild ${{env.MSI_PROJECT_PATH}} /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
