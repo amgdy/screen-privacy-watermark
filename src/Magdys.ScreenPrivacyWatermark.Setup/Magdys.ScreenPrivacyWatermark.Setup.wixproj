@@ -21,7 +21,5 @@
 		<PackageReference Include="WixToolset.UI.wixext" Version="4.0.4" />
 		<PackageReference Include="WixToolset.Util.wixext" Version="4.0.4" />
 	</ItemGroup>
-	<ItemGroup>
-		<ProjectReference Include="..\Magdys.ScreenPrivacyWatermark.App\Magdys.ScreenPrivacyWatermark.App.csproj" Publish="false" />
-	</ItemGroup>
+	
 </Project>
