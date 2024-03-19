@@ -14,6 +14,7 @@ on:
         default: false
 
 permissions:
+  actions: write
   contents: read
   security-events: write
 
@@ -49,6 +50,9 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Restore NuGet Packages
+        run: dotnet restore src
+
       - name: Build App
         if: ${{ github.event.inputs.SelfContained == 'false' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
@@ -64,7 +68,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build MSI
-        run: msbuild ${{env.MSI_PROJECT_PATH}} /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
+        run: msbuild ${{env.MSI_PROJECT_PATH}} -Restore /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4
