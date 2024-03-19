@@ -26,10 +26,10 @@ jobs:
   build:
     runs-on: windows-2022
     env:
-      APP_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj
-      APP_PROJECT_OUTPUT: temp/app
+      APP_PROJECT_PATH: src\Magdys.ScreenPrivacyWatermark.App\Magdys.ScreenPrivacyWatermark.App.csproj
+      APP_PROJECT_OUTPUT: _temp\app
       MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Setup/Magdys.ScreenPrivacyWatermark.Setup.wixproj
-      MSI_PROJECT_OUTPUT: temp/msi
+      MSI_PROJECT_OUTPUT: _temp\msi
       MSI_FILE_NAME: SPW-${{github.event.inputs.Version}}-Setup
 
     steps:
@@ -38,8 +38,8 @@ jobs:
 
       - name: Setup envs
         run: |
-          echo "APP_PROJECT_OUTPUT=${{ runner.temp }}/app" | Out-File -FilePath $env:GITHUB_ENV -Append
-          echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}/msi" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "APP_PROJECT_OUTPUT=${{ runner.temp }}\app" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}\msi" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: List All env
         run: Get-ChildItem env:* | Sort-Object -Property Name
