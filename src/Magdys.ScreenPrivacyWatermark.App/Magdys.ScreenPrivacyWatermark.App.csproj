@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<LangVersion>latest</LangVersion>
+		<AssemblyName>spw</AssemblyName>
+		<ProjectGuid>2742ce11-4343-4565-8326-23f7e440ffca</ProjectGuid>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<PublishReadyToRun>true</PublishReadyToRun>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Experimental">
+		<!--<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>-->
+		<!--<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>-->
+	</PropertyGroup>
+
+	<PropertyGroup Label="Metadata">
+		<Company>Magdy's Software</Company>
+		<Authors>Ahmed Magdy</Authors>
+		<Product>Screen Privacy Watermark</Product>
+		<Title>Screen Privacy Watermark</Title>
+		<Description>Screen Privacy Watermark is a Windows application designed to enhance privacy by discreetly displaying the current logged-in username or email address as a watermark.</Description>
+		<Copyright>© 2024</Copyright>
+		<ApplicationIcon>Assets\spw.ico</ApplicationIcon>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<FileVersion>1.0.1</FileVersion>
+		<ProductVersion>1.0.1</ProductVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Label="LanguageSettings">
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="IPNetwork2" Version="3.0.667" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.1.0" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Graph" Version="5.44.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.59.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.59.0" />
+		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
+	</ItemGroup>
+
+</Project>
