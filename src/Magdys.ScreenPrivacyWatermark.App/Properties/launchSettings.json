@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Magdys.ScreenPrivacyWatermark.App": {
+      "commandName": "Project",
+      "commandLineArgs": "--app:LogLevel=Trace"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+﻿<Project Sdk="WixToolset.Sdk/4.0.4">
+	<PropertyGroup>
+		<AppFolder>../Magdys.ScreenPrivacyWatermark.App/bin/Debug/net8.0-windows</AppFolder>
+		<HarvestDirectorySuppressUniqueIds>true</HarvestDirectorySuppressUniqueIds>
+		<InstallerPlatform>x64</InstallerPlatform>
+	</PropertyGroup>
+	<ItemGroup>
+		<HarvestDirectory Include="$(AppFolder)">
+			<ComponentGroupName>AppFiles</ComponentGroupName>
+			<DirectoryRefId>INSTALLFOLDER</DirectoryRefId>
+			<SuppressRootDirectory>true</SuppressRootDirectory>
+			<SuppressRegistry>true</SuppressRegistry>
+			<SuppressCom>true</SuppressCom>
+		</HarvestDirectory>
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="disclaimer.rtf" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="WixToolset.Heat" Version="4.0.4" />
+		<PackageReference Include="WixToolset.UI.wixext" Version="4.0.4" />
+		<PackageReference Include="WixToolset.Util.wixext" Version="4.0.4" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Magdys.ScreenPrivacyWatermark.App\Magdys.ScreenPrivacyWatermark.App.csproj" Publish="false" />
+	</ItemGroup>
+</Project>

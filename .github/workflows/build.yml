@@ -1,0 +1,47 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches:
+      - "main"
+
+  workflow_dispatch:
+    inputs:
+      Version:
+        description: "Version number"
+        required: false
+        default: "1.0.0"
+      SelfContained:
+        description: "Self-contained build"
+        required: false
+        type: boolean
+        default: false
+
+env:
+  VERSION: ${{ github.event.inputs.Version }}
+  SELF_CONTAINED: ${{ github.event.inputs.SelfContained }}
+  
+
+jobs:
+  build:
+    runs-on: windows-2022
+    env:
+      APP_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj
+      APP_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/app
+      MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Msi/Magdys.ScreenPrivacyWatermark.Msi.wixproj
+      MSI_PROJECT_OUTPUT: ${{ env.RUNNER_TEMP }}/msi
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: List All env
+        run: Get-ChildItem env:* | Sort-Object -Property Name
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Publish App with .NET
+        run: dotnet publish src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj -c=Release -o=${{ env.APP_PROJECT_OUTPUT }} --p:FileVersion=${{ env.VERSION }} --p:AssemblyVersion=${{ env.VERSION }} --p:Version=${{ env.VERSION }}

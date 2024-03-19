@@ -1,0 +1,81 @@
+﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+	<?define ProductVersion = !(bind.FileVersion.spw.exe) ?>
+	<Package Name="Screen Privacy Watermark"
+			 Language="1033"
+			 Compressed="true"
+			 Scope="perMachine"
+			 Manufacturer="Magdy's Software"
+			 Version="$(ProductVersion)"
+			 UpgradeCode="2742ce11-4343-4565-8326-23f7e440ffca">
+		<SummaryInformation Description="Screen Privacy Watermark is a Windows application designed to enhance privacy by discreetly displaying the current logged-in username or email address as a watermark." Keywords="SPW;POC" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
+					  AllowDowngrades="no"
+					  AllowSameVersionUpgrades="no" />
+
+		<MediaTemplate EmbedCab="yes" />
+		<WixVariable Id="WixUILicenseRtf" Value="DISCLAIMER.rtf" />
+		<ui:WixUI Id="WixUI_FeatureTree" >
+		</ui:WixUI>
+		<Property Id="MSIUSEREALADMINDETECTION" Value="1" />
+		<Property Id="MsiRunningElevated" Value="1" />
+
+		<!--Disable Repair Option in the installer-->
+		<Property Id="ARPNOREPAIR" Value="yes" Secure="yes" />
+
+		<!--Disable Modify Option in the installer-->
+		<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
+
+
+		<Feature Id="Main" Title="Magdy's Screen Privacy Watermark">
+			<ComponentGroupRef Id="AppFiles" Primary="true" />
+			<Component Directory="INSTALLFOLDER" Id="RegistryEntriesPerUser" Guid="dbe104f7-62a9-4d5c-8e51-769539176aeb">
+				<!-- Disabling Taskbar Preview -->
+				<RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced">
+					<!-- Windows 10, 11 -->
+					<RegistryValue Type="integer" Name="DisablePreviewWindow" Value="1" KeyPath="yes" />
+
+					<!-- Windows 7, 8, 8.1 -->
+					<!--<RegistryValue Type="integer" Name="ExtendedUIHoverTime" Value="172800000" KeyPath="yes" />
+					<RegistryValue Type="integer" Name="EnableBalloonTips" Value="0" KeyPath="yes" />
+					<RegistryValue Type="integer" Name="ShowInfoTip" Value="0" KeyPath="yes" />-->
+				</RegistryKey>
+			</Component>
+			<Component Directory="INSTALLFOLDER" Id="RegistryEntriesPerMachine" Guid="2ff783d3-1071-46be-8942-f34ce4ff1245">
+				<!-- Disabling Windows 10 Timeline -->
+				<RegistryKey Root="HKMU" Key="SOFTWARE\Policies\Microsoft\Windows\System">
+					<RegistryValue Type="integer" Name="EnableActivityFeed" Value="0" />
+				</RegistryKey>
+			</Component>
+		</Feature>
+
+		<!-- Exits successfully in the case newer version are already installed -->
+		<util:ExitEarlyWithSuccess />
+
+		<!-- Closes the application if running before the overwrite -->
+		<util:CloseApplication
+			Id='CloseSPWProcess'
+			Condition='WIX_DOWNGRADE_DETECTED'
+			CloseMessage='yes'
+			EndSessionMessage='yes'
+			ElevatedCloseMessage='yes'
+			ElevatedEndSessionMessage='yes'
+			Target='spw.exe'
+			RebootPrompt='no' />
+
+
+		<InstallExecuteSequence>
+			<Custom Action="Wix4ExitEarlyWithSuccess_X64" After="FindRelatedProducts" Condition="WIX_DOWNGRADE_DETECTED" />
+			<Custom Action="Wix4CloseApplications_X64" After="InstallValidate" Condition="WIX_DOWNGRADE_DETECTED" />
+		</InstallExecuteSequence>
+
+	</Package>
+
+	<Fragment>
+		<StandardDirectory Id="ProgramFiles64Folder">
+			<Directory Id="CompanyFolder" Name="Magdys">
+				<Directory Id="INSTALLFOLDER" Name="ScreenProtectionWatermark" />
+			</Directory>
+		</StandardDirectory>
+	</Fragment>
+</Wix>
