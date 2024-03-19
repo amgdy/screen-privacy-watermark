@@ -22,9 +22,9 @@ jobs:
     runs-on: windows-2022
     env:
       APP_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.App/Magdys.ScreenPrivacyWatermark.App.csproj
-      APP_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/app
-      MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Msi/Magdys.ScreenPrivacyWatermark.Msi.wixproj
-      MSI_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/msi
+      APP_PROJECT_OUTPUT: ${RUNNER_TEMP}/app
+      MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Setup/Magdys.ScreenPrivacyWatermark.Setup.wixproj
+      MSI_PROJECT_OUTPUT: ${RUNNER_TEMP}/msi
       MSI_FILE_NAME: SPW-${{github.event.inputs.Version}}-Setup
 
     steps:
@@ -56,3 +56,9 @@ jobs:
 
       - name: Build MSI
         run: msbuild ${{env.MSI_PROJECT_PATH}} /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{env.MSI_FILE_NAME}}
+          path: ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
