@@ -25,7 +25,7 @@ jobs:
       APP_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/app
       MSI_PROJECT_PATH: src/Magdys.ScreenPrivacyWatermark.Msi/Magdys.ScreenPrivacyWatermark.Msi.wixproj
       MSI_PROJECT_OUTPUT: ${{ vars.RUNNER_TEMP }}/msi
-      MSI_FILE_NAME: SPW-${{vars.VERSION}}-Setup
+      MSI_FILE_NAME: SPW-${{github.event.inputs.Version}}-Setup
 
     steps:
       - name: Checkout code
@@ -40,15 +40,15 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish App with .NET
-        if: ${{ github.event.inputs.SelfContained == false }}
+        if: ${{ github.event.inputs.SelfContained == 'false' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
 
       - name: Publish App with .NET (Self-contained)
-        if: ${{ github.event.inputs.SelfContained == true }}
+        if: ${{ github.event.inputs.SelfContained == 'true' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}}/app --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true
 
       - name: Set up Wix v4
         run: dotnet tool install --global wix
 
       - name: Build MSI
-        run: dotnet msbuild ${{env.MSI_PROJECT_PATH}} -p:Configuration=Release -p:OutputPath=${{env.MSI_PROJECT_PATH}} -p:OutputName=${{env.MSI_FILE_NAME}}
+        run: msbuild ${{env.MSI_PROJECT_PATH}} /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
