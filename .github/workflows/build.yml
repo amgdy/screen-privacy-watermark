@@ -68,7 +68,7 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build MSI
-        run: msbuild ${{env.MSI_PROJECT_PATH}} -Restore /p:Configuration=Release /p:OutputPath=${{env.MSI_PROJECT_PATH}} /p:OutputName=${{env.MSI_FILE_NAME}} /p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
+        run: msbuild ${{env.MSI_PROJECT_PATH}} -Restore /p:Configuration=Release -p:OutputPath=${{env.MSI_PROJECT_PATH}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:AppFolder=${{env.APP_PROJECT_OUTPUT}}
 
       - name: Upload a Build Artifact
         uses: actions/upload-artifact@v4

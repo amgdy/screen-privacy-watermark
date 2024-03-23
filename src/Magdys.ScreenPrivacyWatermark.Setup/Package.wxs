@@ -13,12 +13,14 @@
 					  AllowDowngrades="no"
 					  AllowSameVersionUpgrades="no" />
 
+
 		<MediaTemplate EmbedCab="yes" />
 		<WixVariable Id="WixUILicenseRtf" Value="DISCLAIMER.rtf" />
 		<ui:WixUI Id="WixUI_FeatureTree" >
 		</ui:WixUI>
 		<Property Id="MSIUSEREALADMINDETECTION" Value="1" />
 		<Property Id="MsiRunningElevated" Value="1" />
+		<Property Id="ARPPRODUCTICON" Value="spw.exe" />
 
 		<!--Disable Repair Option in the installer-->
 		<Property Id="ARPNOREPAIR" Value="yes" Secure="yes" />
@@ -72,6 +74,7 @@
 	</Package>
 
 	<Fragment>
+		<Icon Id="spw.ico" SourceFile="spw.ico"/>
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Magdys">
 				<Directory Id="INSTALLFOLDER" Name="ScreenProtectionWatermark" />
