@@ -15,21 +15,22 @@ internal class SingleInstanceHostedService(ILogger<SingleInstanceHostedService> 
         {
             if (!singleInstanceOptions.Enabled)
             {
-
                 logger.LogInformation("Skipping Single Instance Mode. The application will run multiple instances.");
-
                 return Task.CompletedTask;
             }
 
+            logger.LogTrace("Creating or getting the mutex.");
             _mutex = new Mutex(true, singleInstanceOptions.MutexId, out _isMutexCreated);
             if (!_isMutexCreated)
             {
                 logger.LogWarning("Application is already running.");
                 singleInstanceOptions.OnAlreadyRunning?.Invoke(logger);
 
+                logger.LogTrace("Exiting application due to already running instance.");
                 Environment.Exit(0);
             }
 
+            logger.LogTrace("Mutex created successfully.");
             _isMutexCreated = true;
         }
         catch (AbandonedMutexException e)

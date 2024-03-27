@@ -25,9 +25,9 @@
 		<Description>Screen Privacy Watermark is a Windows application designed to enhance privacy by discreetly displaying the current logged-in username or email address as a watermark.</Description>
 		<Copyright>© 2024</Copyright>
 		<ApplicationIcon>Assets\spw.ico</ApplicationIcon>
-		<AssemblyVersion>1.0.1</AssemblyVersion>
-		<FileVersion>1.0.1</FileVersion>
-		<ProductVersion>1.0.1</ProductVersion>
+		<AssemblyVersion>1.0.0</AssemblyVersion>
+		<FileVersion>1.0.0</FileVersion>
+		<ProductVersion>1.0.0</ProductVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Label="LanguageSettings">
@@ -37,14 +37,20 @@
 
 	<ItemGroup>
 		<PackageReference Include="IPNetwork2" Version="3.0.667" />
+		<PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.22.0" />
+		<PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
+		<PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.AzureAppConfiguration" Version="7.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Graph" Version="5.45.0" />
 		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.59.0" />
 		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.59.0" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
+		<PackageReference Include="Polly.Core" Version="8.3.1" />
 	</ItemGroup>
 
 </Project>

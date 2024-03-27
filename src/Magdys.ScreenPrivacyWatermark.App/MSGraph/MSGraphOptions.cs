@@ -1,6 +1,6 @@
-﻿namespace Magdys.ScreenPrivacyWatermark.App.Settings;
+﻿namespace Magdys.ScreenPrivacyWatermark.App.MSGraph;
 
-public class EntraIdSettings
+public class MSGraphOptions
 {
     public const string SectionName = "EntraID";
 
@@ -13,6 +13,4 @@ public class EntraIdSettings
     public static Uri AuthorityBase => new("https://login.microsoftonline.com");
 
     public Uri Authority => new($"{AuthorityBase}{TenantId}/v2.0");
-
-    public bool IncludeLocalData { get; set; } = true;
 }

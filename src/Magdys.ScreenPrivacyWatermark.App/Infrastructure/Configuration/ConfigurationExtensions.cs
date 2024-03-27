@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration.AzureAppConfiguration;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration;
+using Microsoft.Extensions.Configuration.AzureAppConfiguration;
 
 namespace Magdys.ScreenPrivacyWatermark.App;
 
@@ -36,6 +37,8 @@ internal static class ConfigurationExtensions
                     logger?.LogError("AzureAppConfiguration connection string is not found!");
                 }
             });
+
+        hostApplicationBuilder.Services.AddHostedService<ConfigurationHostedService>();
 
         return hostApplicationBuilder;
     }

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration.Registry;

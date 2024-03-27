@@ -1,6 +1,6 @@
 ﻿using DnsClient.Internal;
 using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Core;
-using Magdys.ScreenPrivacyWatermark.App.WatermarkProviders;
+using Magdys.ScreenPrivacyWatermark.App.Watermark;
 using System.ComponentModel;
 using static Magdys.ScreenPrivacyWatermark.App.NativeMethods;
 
@@ -12,16 +12,19 @@ public partial class MainForm : Form, IMainForm
 
     private readonly IServiceProvider _serviceProvider;
 
-    private readonly WatermarkContext _watermarkContext;
 
+    private readonly WatermarkManager _watermarkManager;
     private bool _isDisplaySettingsChanged = true;
 
-    public MainForm(ILogger<MainForm> logger, IServiceProvider serviceProvider, WatermarkContext watermarkContext)
+    public MainForm(ILogger<MainForm> logger,
+        IServiceProvider serviceProvider,
+
+        WatermarkManager watermarkManager)
     {
         InitializeComponent();
         _logger = logger;
         _serviceProvider = serviceProvider;
-        _watermarkContext = watermarkContext;
+        _watermarkManager = watermarkManager;
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
     }
 
@@ -60,6 +63,8 @@ public partial class MainForm : Form, IMainForm
     {
         _logger.LogTrace("Executing {e}.", nameof(MainForm_FormClosing));
 
+        _logger.LogDebug("Form closing reason: {reason}", e.CloseReason);
+
         switch (e.CloseReason)
         {
             case CloseReason.None:
@@ -94,13 +99,13 @@ public partial class MainForm : Form, IMainForm
                 _isDisplaySettingsChanged = false;
             }
 
-            if (isFirstIteration && !await _watermarkContext.Provider.IsOnline())
+            if (isFirstIteration && !await _watermarkManager.IsConnectedAsync())
             {
                 // Enable your timers here
                 TimerOnlineStatus.Enabled = true;
-
-                isFirstIteration = false;
             }
+
+            isFirstIteration = false;
 
             await Task.Delay(1000);
         }
@@ -119,7 +124,7 @@ public partial class MainForm : Form, IMainForm
             openedForm.ForceClose();
         }
 
-        var watermarkText = await _watermarkContext.GetWatermarkText();
+        var watermarkText = await _watermarkManager.GetWatermarkText();
 
         foreach (var screen in Screen.AllScreens)
         {
@@ -136,7 +141,7 @@ public partial class MainForm : Form, IMainForm
     private async void TimerOnlineStatus_Tick(object sender, EventArgs e)
     {
         _logger.LogTrace("Executing {e}.", nameof(TimerOnlineStatus_Tick));
-        while (!await _watermarkContext.Provider.IsOnline())
+        while (!await _watermarkManager.IsConnectedAsync())
         {
             await Task.Delay(5000);
         }

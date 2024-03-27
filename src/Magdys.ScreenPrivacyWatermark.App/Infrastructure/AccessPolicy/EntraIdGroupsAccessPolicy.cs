@@ -1,16 +1,17 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.WatermarkProviders.EntraId;
+﻿using Magdys.ScreenPrivacyWatermark.App.MSGraph;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
 
-internal class EntraIdGroupsAccessPolicy(ILogger<EntraIdGroupsAccessPolicy> logger,
+internal class EntraIdGroupsAccessPolicy(
+    ILogger<EntraIdGroupsAccessPolicy> logger,
     EntraIdGroupsAccessPolicyOptions options,
     IServiceProvider serviceProvider) : IAccessPolicy
 {
     public bool Enabled => options.AllowedGroupsIdsList.Length > 0;
 
-    public int Order => 3;
+    public int Order => 003;
 
     public async Task<bool> CheckAccessAsync()
     {
@@ -22,7 +23,7 @@ internal class EntraIdGroupsAccessPolicy(ILogger<EntraIdGroupsAccessPolicy> logg
             return true;
         }
 
-        var microsoftGraphService = serviceProvider.GetService<MicrosoftGraphService>();
+        var microsoftGraphService = serviceProvider.GetService<MSGraphService>();
 
         if (microsoftGraphService == null)
         {

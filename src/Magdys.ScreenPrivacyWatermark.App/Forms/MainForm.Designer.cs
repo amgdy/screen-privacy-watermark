@@ -43,9 +43,8 @@
             labelInfo.Dock = DockStyle.Fill;
             labelInfo.Font = new Font("Segoe UI", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
             labelInfo.Location = new Point(0, 0);
-            labelInfo.Margin = new Padding(8, 0, 8, 0);
             labelInfo.Name = "labelInfo";
-            labelInfo.Size = new Size(1800, 1200);
+            labelInfo.Size = new Size(720, 440);
             labelInfo.TabIndex = 0;
             labelInfo.Text = "Magdy's Screen Privacy Watermark";
             labelInfo.TextAlign = ContentAlignment.MiddleCenter;
@@ -58,13 +57,14 @@
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(240F, 240F);
+            AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.White;
-            ClientSize = new Size(1800, 1200);
+            ClientSize = new Size(720, 440);
+            ControlBox = false;
             Controls.Add(labelInfo);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(2);
+            Margin = new Padding(1, 1, 1, 1);
             MaximizeBox = false;
             MdiChildrenMinimizedAnchorBottom = false;
             MinimizeBox = false;

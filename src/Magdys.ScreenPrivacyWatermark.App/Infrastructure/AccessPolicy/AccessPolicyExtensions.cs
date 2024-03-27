@@ -6,22 +6,20 @@ namespace Magdys.ScreenPrivacyWatermark.App;
 
 public static class AccessPolicyExtensions
 {
-    public static HostApplicationBuilder ConfigureAccessPolicies(this HostApplicationBuilder hostApplicationBuilder, ILogger logger = null)
+    public static HostApplicationBuilder ConfigureAccessPolicies(this HostApplicationBuilder hostApplicationBuilder, ILogger? logger = null)
     {
         hostApplicationBuilder.Services.AddOptions<AccessPolicyOptions>()
             .BindConfiguration(AccessPolicyOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        hostApplicationBuilder.RegisterAccessPoliciesDynamic(logger);
+        hostApplicationBuilder.RegisterAccessPoliciesWithOptionsDynamic(logger);
 
         hostApplicationBuilder.Services.AddHostedService<AccessPolicyHostedService>();
         return hostApplicationBuilder;
     }
 
-
-
-    private static void RegisterAccessPoliciesDynamic(this HostApplicationBuilder hostApplicationBuilder, ILogger logger = null)
+    private static void RegisterAccessPoliciesWithOptionsDynamic(this HostApplicationBuilder hostApplicationBuilder, ILogger? logger = null)
     {
         // Register all access policies
         var assembly = Assembly.GetExecutingAssembly();

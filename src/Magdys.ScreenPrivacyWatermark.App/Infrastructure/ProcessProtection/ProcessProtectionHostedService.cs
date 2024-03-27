@@ -43,12 +43,14 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
         logger.LogTrace("Executing {method}.", nameof(Protect));
 
         // Get the current process handle
+        logger.LogTrace("Getting the current process handle.");
         IntPtr hProcess = GetCurrentProcess();
 
         const int DACL_SECURITY_INFORMATION = 0x00000004;
         byte[] psd = [];
 
         // Call with 0 size to obtain the actual size needed in bufSizeNeeded
+        logger.LogTrace("Obtaining the actual size needed for GetKernelObjectSecurity.");
         GetKernelObjectSecurity(hProcess, DACL_SECURITY_INFORMATION, psd, 0, out uint bufSizeNeeded);
         if (bufSizeNeeded > short.MaxValue)
         {
@@ -56,6 +58,7 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
         }
 
         // Allocate the required bytes and obtain the DACL
+        logger.LogTrace("Allocating required bytes and obtaining the DACL.");
         if (!GetKernelObjectSecurity(hProcess, DACL_SECURITY_INFORMATION, psd = new byte[bufSizeNeeded], bufSizeNeeded, out _))
         {
             throw new Win32Exception();
@@ -64,12 +67,13 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
         var dacl = new RawSecurityDescriptor(psd, 0);
 
         // Insert the new ACE
-
+        logger.LogTrace("Inserting the new ACE.");
         var ace = new CommonAce(AceFlags.None, AceQualifier.AccessDenied, (int)ProcessAccessRights.PROCESS_ALL_ACCESS, new SecurityIdentifier(WellKnownSidType.WorldSid, null), false, null);
         dacl.DiscretionaryAcl?.InsertAce(0, ace);
 
         byte[] rawsd = new byte[dacl.BinaryLength];
         dacl.GetBinaryForm(rawsd, 0);
+        logger.LogTrace("Setting the kernel object security.");
         if (!SetKernelObjectSecurity(hProcess, DACL_SECURITY_INFORMATION, rawsd))
         {
             throw new Win32Exception();

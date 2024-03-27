@@ -9,15 +9,18 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
         logger.LogTrace("Executing {method}.", nameof(StartAsync));
         if (cancellationToken.IsCancellationRequested)
         {
+            logger.LogTrace("Cancellation requested. Exiting {method}.", nameof(StartAsync));
             return Task.CompletedTask;
         }
 
+        logger.LogTrace("Getting MainForm from service provider.");
         if (serviceProvider.GetService<IMainForm>() is not Form mainForm)
         {
             logger.LogWarning("MainForm is not registered");
         }
         else
         {
+            logger.LogTrace("MainForm found. Running application context.");
             Application.Run(new ApplicationContext(mainForm));
         }
 
@@ -29,9 +32,12 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
     {
         logger.LogTrace("Executing {method}.", nameof(StopAsync));
         var openForms = Application.OpenForms.OfType<Form>().ToArray();
+        logger.LogTrace("Found {count} open forms.", openForms.Length);
+
         if (winFormsOptions.CloseMainFormOnly)
         {
             openForms = openForms.Where(f => f is IMainForm).ToArray();
+            logger.LogTrace("Filtered to main forms only. {count} forms remaining.", openForms.Length);
         }
 
         foreach (var form in openForms)
@@ -45,8 +51,10 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
                 }
                 else
                 {
+                    logger.LogTrace("Closing the form {text}.", form.Text);
                     form.Close();
                 }
+                logger.LogTrace("Disposing the form {text}.", form.Text);
                 form.Dispose();
             }
             catch (Exception ex)
@@ -57,6 +65,7 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
 
         logger.LogTrace("Executed {method}.", nameof(StopAsync));
         Application.ExitThread();
+        logger.LogTrace("Exited application thread.");
 
         return Task.CompletedTask;
     }

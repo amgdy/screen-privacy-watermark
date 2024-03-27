@@ -47,8 +47,8 @@ try {
 
     $appPublishParams = @(
         "$projectFile",
-        "--output=$appOutputPath",
-        "--configuration=Release",
+        "-o=$appOutputPath",
+        "-c=Release",
         "-p:FileVersion=$Version",
         "-p:AssemblyVersion=$Version",
         "-p:Version=$Version"
@@ -61,21 +61,23 @@ try {
         )
     }
 
-    Write-Host "Running dotnet publish with parameters: $appPublishParams" -ForegroundColor Yellow
+    Write-Host "Running dotnet publish $appPublishParams" -ForegroundColor Yellow
     dotnet publish $appPublishParams
 
     $wixFile = "$srcPath\Magdys.ScreenPrivacyWatermark.Setup\Magdys.ScreenPrivacyWatermark.Setup.wixproj"
 
     $msiParams = @(
-        "$wixFile",
-        "/p:Configuration=Release",
-        "/p:AppFolder=$tempOutputPath",
-        "/p:OutputName=SPW-$Version-Setup",
-        "/p:OutputPath=$tempOutputPath"
+        $wixFile,
+        "-c=Release",
+        "-o=$tempOutputPath",
+        "-p:Version=$Version",
+        "-p:AppDir=$appOutputPath",
+        "-p:OutputName=Setup"
     )
 
-    Write-Host "Running MSBuild with parameters: $msiParams" -ForegroundColor Yellow
-    & $msbuildPath $msiParams
+    Write-Host "Running: dotnet build $msiParams" -ForegroundColor Yellow
+
+    dotnet build $msiParams
 }
 finally {
     Write-Host "Cleaning up temp output folder: $tempOutputPath" -ForegroundColor Yellow

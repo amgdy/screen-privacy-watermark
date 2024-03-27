@@ -55,6 +55,7 @@
             AutoScaleMode = AutoScaleMode.Dpi;
             BackColor = Color.White;
             ClientSize = new Size(800, 450);
+            ControlBox = false;
             Controls.Add(labelInfo);
             FormBorderStyle = FormBorderStyle.None;
             MaximizeBox = false;

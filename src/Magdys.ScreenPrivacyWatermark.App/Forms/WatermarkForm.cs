@@ -1,8 +1,8 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
-using Magdys.ScreenPrivacyWatermark.App.WatermarkProviders;
+using Magdys.ScreenPrivacyWatermark.App.Settings;
+using Microsoft.Extensions.Options;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 using System.Text;
 using static Magdys.ScreenPrivacyWatermark.App.NativeMethods;
 
@@ -11,22 +11,23 @@ namespace Magdys.ScreenPrivacyWatermark.App.Forms;
 public partial class WatermarkForm : Form
 {
     private readonly ILogger<WatermarkForm> _logger;
+    private readonly IOptions<WatermarkFormatSettings> _watermarkFormatSetting;
 
-    private readonly WatermarkContext _context;
     private readonly ProcessAccessPolicyOptions _processAccessPolicyOptions;
-    private WatermarkFormOptions _watermarkFormOptions;
+
 
     private bool _isFormClosingSubscribed = true;
     private bool _isInitialized = false;
+    private WatermarkFormOptions _watermarkFormOptions = null;
     private const string _loggerExecutingText = "Executing {method} for '{text}'";
 
     private const string _loggerExecutedText = "Executed {method} for '{text}'";
 
-    public WatermarkForm(ILogger<WatermarkForm> logger, WatermarkContext watermarkContext, ProcessAccessPolicyOptions _processAccessPolicyOptions)
+    public WatermarkForm(ILogger<WatermarkForm> logger, IOptions<WatermarkFormatSettings> watermarkFormatSetting, ProcessAccessPolicyOptions _processAccessPolicyOptions)
     {
         InitializeComponent();
         _logger = logger;
-        _context = watermarkContext;
+        _watermarkFormatSetting = watermarkFormatSetting;
         this._processAccessPolicyOptions = _processAccessPolicyOptions;
     }
 
@@ -79,6 +80,8 @@ public partial class WatermarkForm : Form
     {
         _logger.LogTrace(_loggerExecutingText, nameof(WatermarkForm_FormClosing), Text);
 
+        _logger.LogDebug("Form closing reason: {reason}", e.CloseReason);
+
         switch (e.CloseReason)
         {
             case CloseReason.None:
@@ -126,7 +129,7 @@ public partial class WatermarkForm : Form
 
         ArgumentNullException.ThrowIfNull(graphics);
 
-        graphics.TextRenderingHint = _context.Format.TextRender;
+        graphics.TextRenderingHint = _watermarkFormatSetting.Value.TextRender;
         graphics.SmoothingMode = SmoothingMode.Default;
         graphics.InterpolationMode = InterpolationMode.Default;
         var watermarkDrawingArea = _watermarkFormOptions.Screen.WorkingArea;
@@ -136,12 +139,12 @@ public partial class WatermarkForm : Form
         double diagonalSize = Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
 
         string watermarkText = _watermarkFormOptions.WatermarkText;
-        string watermarkTextSpacer = new(' ', _context.Format.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
+        string watermarkTextSpacer = new(' ', _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
 
         string watermarkBaseString = $"{watermarkText} {watermarkTextSpacer}";
 
-        using var font = new Font(_context.Format.FontName, _context.Format.FontSize, FontStyle.Regular, GraphicsUnit.Point);
-        using var brush = new SolidBrush(Color.FromArgb(255, _context.Format.Color));
+        using var font = new Font(_watermarkFormatSetting.Value.FontName, _watermarkFormatSetting.Value.FontSize, FontStyle.Regular, GraphicsUnit.Point);
+        using var brush = new SolidBrush(Color.FromArgb(255, _watermarkFormatSetting.Value.Color));
         using var stringFormat = new StringFormat(StringFormatFlags.NoClip);
 
         var watermarkTextBuilder = new StringBuilder(watermarkBaseString);
@@ -155,7 +158,7 @@ public partial class WatermarkForm : Form
         var watermarkLineText = watermarkTextBuilder.ToString();
 
         // Calculate the spacing between lines
-        var numberOfLines = _context.Format.LinesCount + 2;
+        var numberOfLines = _watermarkFormatSetting.Value.LinesCount + 2;
         double lineSpacing = (diagonalSize * 1.7) / numberOfLines;
 
         lineSpacing *= 1.0;
@@ -167,14 +170,14 @@ public partial class WatermarkForm : Form
             graphics.RotateTransform(-45);
             var point = new PointF(0, 0);
 
-            if (_context.Format.OutlineColor == null)
+            if (_watermarkFormatSetting.Value.OutlineColor == null)
             {
                 graphics.DrawString(watermarkLineText, font, brush, point, stringFormat);
             }
             else
             {
                 using var graphicPath = new GraphicsPath();
-                using var pen = new Pen(_context.Format.OutlineColor.Value, _context.Format.OutlineWidth);
+                using var pen = new Pen(_watermarkFormatSetting.Value.OutlineColor.Value, _watermarkFormatSetting.Value.OutlineWidth);
                 graphicPath.AddString(watermarkLineText, font.FontFamily, (int)font.Style, font.Size * 1.5f, point, stringFormat);
 
                 graphics.DrawPath(pen, graphicPath);
@@ -195,7 +198,7 @@ public partial class WatermarkForm : Form
 
     //    string watermarkText = _watermarkFormOptions._watermarkText;
 
-    //    string spacer = new string(' ', _context.Format.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
+    //    string spacer = new string(' ', _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
 
     //    string watermarkBaseString = $"{watermarkText} {spacer}";
 
@@ -227,43 +230,43 @@ public partial class WatermarkForm : Form
     //        throw new ArgumentException("Watermark text cannot be NULL or empty.", nameof(text));
     //    }
 
-    //    graphics.TextRenderingHint = _context.Format.TextRender;
+    //    graphics.TextRenderingHint = _watermarkFormatSetting.Value.TextRender;
     //    graphics.SmoothingMode = SmoothingMode.Default;
     //    graphics.InterpolationMode = InterpolationMode.Default;
 
-    //    using var font = new Font(_context.Format.FontName, _context.Format.FontSize, FontStyle.Regular, GraphicsUnit.Point);
-    //    using var brush = new SolidBrush(Color.FromArgb(255, _context.Format.Color));
+    //    using var font = new Font(_watermarkFormatSetting.Value.FontName, _watermarkFormatSetting.Value.FontSize, FontStyle.Regular, GraphicsUnit.Point);
+    //    using var brush = new SolidBrush(Color.FromArgb(255, _watermarkFormatSetting.Value.Color));
     //    using var stringFormat = new StringFormat(StringFormatFlags.NoClip);
 
 
     //    graphics.ResetTransform();
-    //    if (_context.Format.UseDiagonalLines)
+    //    if (_watermarkFormatSetting.Value.UseDiagonalLines)
     //    {
     //        graphics.RotateTransform(-45);
     //    }
 
     //    double screenDiagonal = Math.Round(Math.Sqrt(Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Width, 2) + Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Height, 2)));
 
-    //    int repeatCounts = _context.Format.LinesCount;
+    //    int repeatCounts = _watermarkFormatSetting.Value.LinesCount;
 
-    //    int x = _context.Format.UseDiagonalLines ? (int)screenDiagonal : Bounds.Height;
+    //    int x = _watermarkFormatSetting.Value.UseDiagonalLines ? (int)screenDiagonal : Bounds.Height;
 
     //    int spacer = x / repeatCounts;
 
-    //    int firstPoint = _context.Format.UseDynamicsSpacing ? new Random().Next(-2, 2) : 0;
+    //    int firstPoint = _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(-2, 2) : 0;
 
     //    for (int i = firstPoint; i < repeatCounts + 2 + firstPoint; i++)
     //    {
     //        var point = new Point(-spacer * i, spacer * i);
 
-    //        if (_context.Format.OutlineColor == null)
+    //        if (_watermarkFormatSetting.Value.OutlineColor == null)
     //        {
     //            graphics.DrawString(text, font, brush, point, stringFormat);
     //        }
     //        else
     //        {
     //            using GraphicsPath graphicPath = new GraphicsPath();
-    //            using Pen pen = new Pen(_context.Format.OutlineColor.Value, _context.Format.OutlineWidth);
+    //            using Pen pen = new Pen(_watermarkFormatSetting.Value.OutlineColor.Value, _watermarkFormatSetting.Value.OutlineWidth);
     //            graphicPath.AddString(text, font.FontFamily, (int)font.Style, font.Size * 1.5f, point, stringFormat);
 
     //            graphics.DrawPath(pen, graphicPath);
@@ -284,7 +287,7 @@ public partial class WatermarkForm : Form
 
         if (allowedProcessesList.Length == 0)
         {
-            Opacity = _context.Format.OpacityF;
+            Opacity = _watermarkFormatSetting.Value.OpacityF;
             return;
         }
 
@@ -298,7 +301,7 @@ public partial class WatermarkForm : Form
             var isMinimized = IsIconic(process.MainWindowHandle);
             if (!isMinimized)
             {
-                Opacity = _context.Format.OpacityF;
+                Opacity = _watermarkFormatSetting.Value.OpacityF;
                 return;
             }
         }

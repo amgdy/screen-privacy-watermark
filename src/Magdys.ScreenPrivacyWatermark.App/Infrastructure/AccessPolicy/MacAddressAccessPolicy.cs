@@ -1,20 +1,32 @@
-﻿using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net.NetworkInformation;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
 
-internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, MacAddressAccessPolicyOptions? options = null) : IAccessPolicy
+internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, MacAddressAccessPolicyOptions options = null) : IAccessPolicy
 {
-    public bool Enabled => false;
+    public bool Enabled => options.AllowedMacAddressesArray.Length > 0;
 
-    public int Order => 001;
+    public int Order => 002;
 
     public async Task<bool> CheckAccessAsync()
     {
-        return true;
+        logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
+
+        var allowedMacs = options.AllowedMacAddressesArray.Select(mac => mac.ToUpper()).ToArray();
+
+        var physicalAddresses = NetworkInterface.GetAllNetworkInterfaces()
+            .Where(n => n.OperationalStatus == OperationalStatus.Up)
+            .Select(n => n.GetPhysicalAddress().ToString().ToUpper())
+            .ToArray();
+
+
+        var commonMacs = allowedMacs.Intersect(physicalAddresses);
+
+        var hasAccess = commonMacs.Any();
+
+        logger.LogDebug("User {hasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(MacAddressAccessPolicy));
+
+        logger.LogTrace("Executed {method}.", nameof(CheckAccessAsync));
+        return hasAccess;
     }
 }

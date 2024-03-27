@@ -1,111 +1,110 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Forms;
+using Magdys.ScreenPrivacyWatermark.App.Watermark;
 using NLog.Extensions.Logging;
 using System.Reflection;
-using System.Text;
 
-namespace Magdys.ScreenPrivacyWatermark.App
+namespace Magdys.ScreenPrivacyWatermark.App;
+
+internal static class Program
 {
-    internal static class Program
+    /// <summary>
+    ///  The main entry point for the application.
+    /// </summary>
+    [STAThread]
+    private static async Task Main(string[] args)
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static async Task Main(string[] args)
+        ApplicationConfiguration.Initialize();
+
+        NLog.LogManager.Configuration = LoggingExtensions.GetNLogDefaultConfig(NLog.LogLevel.Trace);
+
+        var loggerFactory = LoggerFactory.Create(builder =>
         {
-            ApplicationConfiguration.Initialize();
+            builder.AddNLog(NLog.LogManager.Configuration);
+        });
 
-            NLog.LogManager.Configuration = LoggingExtensions.GetNLogDefaultConfig(NLog.LogLevel.Trace, true);
+        var logger = loggerFactory.CreateLogger(nameof(Program));
 
-            var loggerFactory = LoggerFactory.Create(builder =>
+        WriteStartupLogs(logger, args);
+
+        IHost? host = null;
+
+        try
+        {
+            var hostApplicationBuilderSettings = new HostApplicationBuilderSettings
             {
-                builder.AddNLog(NLog.LogManager.Configuration);
-            });
+                Args = args,
+                ApplicationName = Metadata.ApplicationNameLong,
+                DisableDefaults = true
+            };
 
-            var logger = loggerFactory.CreateLogger(nameof(Program));
+            var hostApplicationBuilder = Host.CreateEmptyApplicationBuilder(hostApplicationBuilderSettings);
 
-            WriteStartupLogs(logger, args);
-
-            IHost? host = null;
-
-            try
-            {
-                var hostApplicationBuilderSettings = new HostApplicationBuilderSettings
+            hostApplicationBuilder
+                .ConfigureAppConfiguration(args, loggerFactory.CreateLogger("Configuration"))
+                .ConfigureLogging(options =>
                 {
-                    Args = args,
-                    ApplicationName = Metadata.ApplicationNameLong,
-                    DisableDefaults = true
-                };
-
-                var hostApplicationBuilder = Host.CreateEmptyApplicationBuilder(hostApplicationBuilderSettings);
-
-                hostApplicationBuilder
-                    .ConfigureAppConfiguration(args, loggerFactory.CreateLogger("Configuration"))
-                    .ConfigureLogging(options =>
-                    {
-                        options.UseShortLoggerName = false;
+                    options.UseShortLoggerName = false;
 #if DEBUG
-                        options.FallbackLogLevel = NLog.LogLevel.Trace;
+                    options.FallbackLogLevel = NLog.LogLevel.Trace;
 #endif
-                    })
-                    .ConfigureSingleInstance(options =>
-                    {
-                        options.Enabled = true;
-                        options.MutexId = Metadata.ApplicationId.ToString();
-                        options.OnAlreadyRunning = logger => logger.LogWarning("Application supports running single instance only!");
-                    })
-                    .ConfigureProcessProtection(options =>
-                    {
-                        options.Enabled = true;
-#if DEBUG
-                        // disable the protection when debugging
-                        options.Enabled = false;
-#endif
-                    })
-                    .ConfigureSettings()
-                    .ConfigureWatermarkProviders()
-                    .ConfigureAccessPolicies(logger)
-                    .ConfigureWinForms<MainForm, WatermarkForm>(options =>
-                    {
-                        options.CloseMainFormOnly = false;
-                        options.Args = args;
-                    })
-
-                    ;
-
-
-                host = hostApplicationBuilder.Build();
-
-                await host.StartAsync();
-
-            }
-            catch (Exception ex)
-            {
-                logger.LogCritical(ex, "Application terminated unexpectedly");
-                throw;
-            }
-            finally
-            {
-                NLog.LogManager.Shutdown();
-                if (host != null)
+                })
+                .ConfigureSingleInstance(options =>
                 {
-                    await host.StopAsync();
+                    options.Enabled = true;
+                    options.MutexId = Metadata.ApplicationId.ToString();
+                    options.OnAlreadyRunning = logger => logger.LogWarning("Application supports running single instance only!");
+                })
+                .ConfigureProcessProtection(options =>
+                {
+                    options.Enabled = true;
+#if DEBUG
+                    // disable the protection when debugging
+                    options.Enabled = false;
+#endif
+                })
+                .ConfigureSettings()
+                .ConfigureWatermark(logger)
+                .ConfigureAccessPolicies(logger)
+                .ConfigureWinForms<MainForm, WatermarkForm>(options =>
+                {
+                    options.CloseMainFormOnly = false;
+                    options.Args = args;
+                })
 
-                }
+                ;
+
+
+            host = hostApplicationBuilder.Build();
+
+            await host.StartAsync();
+
+        }
+        catch (Exception ex)
+        {
+            logger.LogCritical(ex, "Application terminated unexpectedly");
+            throw;
+        }
+        finally
+        {
+            NLog.LogManager.Shutdown();
+            if (host != null)
+            {
+                await host.StopAsync();
+
             }
         }
+    }
 
-        private static void WriteStartupLogs(ILogger logger, string[] args)
-        {
-            logger.LogInformation("──────────────────────────────────────────────────────");
-            logger.LogInformation("Starting {AppName} by {Company}...", Metadata.ApplicationNameLong, Metadata.CompanyNameLong);
-            logger.LogInformation("Application started by {Domain}\\{User}.", Environment.UserDomainName, Environment.UserName);
-            logger.LogInformation(
-                 "Application version {version} is running on {@frameworkDescription}.",
-                 Assembly.GetEntryAssembly()?.GetName().Version,
-                 System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+    private static void WriteStartupLogs(ILogger logger, string[] args)
+    {
+        logger.LogInformation("──────────────────────────────────────────────────────");
+        logger.LogInformation("Starting {AppName} by {Company}...", Metadata.ApplicationNameLong, Metadata.CompanyNameLong);
+        logger.LogInformation("Application started by {Domain}\\{User}.", Environment.UserDomainName, Environment.UserName);
+        logger.LogInformation(
+             "Application version {version} is running on {@frameworkDescription}.",
+             Assembly.GetEntryAssembly()?.GetName().Version,
+             System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
 
-            logger.LogInformation("Application started with arguments: {@args}.", args);
-        }
+        logger.LogInformation("Application started with arguments: {@args}.", args);
     }
 }
