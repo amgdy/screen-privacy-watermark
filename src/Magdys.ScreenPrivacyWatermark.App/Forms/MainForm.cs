@@ -163,7 +163,7 @@ public partial class MainForm : Form, IMainForm
     {
 
 #if !(DEBUG)
-        _logger.LogTrace(_loggerExecutingText, nameof(TimeProcessPolicyCheck_Tick), Text);
+        _logger.LogTrace("Executing {e}.", nameof(TimeProcessAccessPolicyCheck_Tick));
 #endif
         if (_processAccessPolicyOptions.AllowedProcessesList.Length == 0)
         {
@@ -226,7 +226,7 @@ public partial class MainForm : Form, IMainForm
 
 
 #if !(DEBUG)
-        _logger.LogTrace(_loggerExecutedText, nameof(TimeProcessPolicyCheck_Tick), Text);
+        _logger.LogTrace("Executed {e}.", nameof(TimeProcessAccessPolicyCheck_Tick));
 #endif
 
     }
