@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Drawing.Text;
 
-namespace Magdys.ScreenPrivacyWatermark.App.Settings;
+namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
 
-public class WatermarkFormatSettings
+public class WatermarkFormatOptions
 {
     public const string SectionName = "Format";
 
@@ -37,7 +37,7 @@ public class WatermarkFormatSettings
 #if DEBUG
         set; // setter only while debugging
 #endif
-    } = TextRenderingHint.SystemDefault;
+    } = TextRenderingHint.SingleBitPerPixel;
 
     public bool UseDiagonalLines
     {

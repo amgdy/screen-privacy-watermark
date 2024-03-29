@@ -8,7 +8,7 @@ internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, Ma
 
     public int Order => 002;
 
-    public async Task<bool> CheckAccessAsync()
+    public Task<bool> CheckAccessAsync()
     {
         logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
 
@@ -27,6 +27,6 @@ internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, Ma
         logger.LogDebug("User {hasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(MacAddressAccessPolicy));
 
         logger.LogTrace("Executed {method}.", nameof(CheckAccessAsync));
-        return hasAccess;
+        return Task.FromResult(hasAccess);
     }
 }

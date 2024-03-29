@@ -1,4 +1,5 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
+﻿using Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
+using Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 using Microsoft.Extensions.Options;
 using Polly;
 using Polly.Retry;
@@ -12,7 +13,7 @@ namespace Magdys.ScreenPrivacyWatermark.App.Watermark;
 public class WatermarkManager(
     ILogger<WatermarkManager> logger,
     IServiceProvider serviceProvider,
-    IOptions<WatermarkOptions> watermarkOptions)
+    IOptions<WatermarkLayoutOptions> watermarkOptions)
 {
     public Dictionary<string, string> Data { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -174,7 +175,7 @@ public class WatermarkManager(
 
             watermarkText = watermarkTextBuilder.ToString();
 
-            if (watermarkOptions.Value.EnableCache)
+            if (watermarkOptions.Value.EnableWatermarkTextCache)
             {
                 logger.LogDebug("Watermark caching is enabled.");
                 var watermarkTextBytes = Encoding.UTF8.GetBytes(watermarkText);
@@ -185,7 +186,7 @@ public class WatermarkManager(
         }
         else
         {
-            if (watermarkOptions.Value.EnableCache)
+            if (watermarkOptions.Value.EnableWatermarkTextCache)
             {
                 logger.LogDebug("Watermark caching is enabled.");
 

@@ -1,7 +1,6 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
-using Magdys.ScreenPrivacyWatermark.App.Settings;
+using Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
 using Microsoft.Extensions.Options;
-using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Text;
 using static Magdys.ScreenPrivacyWatermark.App.NativeMethods;
@@ -11,24 +10,18 @@ namespace Magdys.ScreenPrivacyWatermark.App.Forms;
 public partial class WatermarkForm : Form
 {
     private readonly ILogger<WatermarkForm> _logger;
-    private readonly IOptions<WatermarkFormatSettings> _watermarkFormatSetting;
-
-    private readonly ProcessAccessPolicyOptions _processAccessPolicyOptions;
-
-
+    private readonly IOptions<WatermarkFormatOptions> _watermarkFormatSetting;
     private bool _isFormClosingSubscribed = true;
     private bool _isInitialized = false;
     private WatermarkFormOptions _watermarkFormOptions = null;
     private const string _loggerExecutingText = "Executing {method} for '{text}'";
-
     private const string _loggerExecutedText = "Executed {method} for '{text}'";
 
-    public WatermarkForm(ILogger<WatermarkForm> logger, IOptions<WatermarkFormatSettings> watermarkFormatSetting, ProcessAccessPolicyOptions _processAccessPolicyOptions)
+    public WatermarkForm(ILogger<WatermarkForm> logger, IOptions<WatermarkFormatOptions> watermarkFormatSetting)
     {
         InitializeComponent();
         _logger = logger;
         _watermarkFormatSetting = watermarkFormatSetting;
-        this._processAccessPolicyOptions = _processAccessPolicyOptions;
     }
 
     protected override CreateParams CreateParams
@@ -88,7 +81,7 @@ public partial class WatermarkForm : Form
             case CloseReason.MdiFormClosing:
             case CloseReason.UserClosing:
             case CloseReason.TaskManagerClosing:
-            case CloseReason.ApplicationExitCall:
+            //case CloseReason.ApplicationExitCall:
                 e.Cancel = true;
                 break;
         }
@@ -104,12 +97,12 @@ public partial class WatermarkForm : Form
             throw new InvalidOperationException($"Form is not initialized. You need to call {nameof(InitializeForm)} method first.");
         }
 
-        if (_processAccessPolicyOptions.AllowedProcessesList.Length != 0)
+        // Means the process access policy is enabled.
+        if (ProcessAccessPolicyState.HideWatermark.HasValue)
         {
+            _logger.LogDebug("Process Access Policy is enabled.");
             TimeProcessPolicyCheck.Enabled = true;
         }
-
-
 
         _logger.LogTrace(_loggerExecutedText, nameof(WatermarkForm_Load), Text);
     }
@@ -192,121 +185,27 @@ public partial class WatermarkForm : Form
         _logger.LogTrace(_loggerExecutedText, nameof(DrawWatermarkText), Text);
     }
 
-    //private string GetFormattedWatermarkText(Graphics graphics)
-    //{
-    //    _logger.LogTrace(_loggerExecutingText, nameof(GetFormattedWatermarkText), Text);
-
-    //    string watermarkText = _watermarkFormOptions._watermarkText;
-
-    //    string spacer = new string(' ', _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
-
-    //    string watermarkBaseString = $"{watermarkText} {spacer}";
-
-    //    _logger.LogDebug("Watermark text: {_watermarkText}", watermarkBaseString);
-
-    //    double width = _watermarkFormOptions.Screen.Bounds.Width;
-    //    double height = _watermarkFormOptions.Screen.Bounds.Height;
-    //    double diagonalSize = Math.Sqrt(Math.Pow(width, 2) + Math.Pow(height, 2));
-
-    //    StringBuilder formatedText = new StringBuilder();
-    //    for (int i = 0; i < 100; i++)
-    //    {
-    //        formatedText.Append(watermarkBaseString);
-    //    }
-
-    //    _logger.LogTrace(_loggerExecutedText, nameof(GetFormattedWatermarkText), Text);
-
-    //    return formatedText.ToString();
-    //}
-
-    //private void DrawWatermarkTextOld(Graphics graphics, string text)
-    //{
-    //    _logger.LogTrace(_loggerExecutingText, nameof(DrawWatermarkText), Text);
-
-    //    ArgumentNullException.ThrowIfNull(graphics);
-
-    //    if (string.IsNullOrEmpty(text))
-    //    {
-    //        throw new ArgumentException("Watermark text cannot be NULL or empty.", nameof(text));
-    //    }
-
-    //    graphics.TextRenderingHint = _watermarkFormatSetting.Value.TextRender;
-    //    graphics.SmoothingMode = SmoothingMode.Default;
-    //    graphics.InterpolationMode = InterpolationMode.Default;
-
-    //    using var font = new Font(_watermarkFormatSetting.Value.FontName, _watermarkFormatSetting.Value.FontSize, FontStyle.Regular, GraphicsUnit.Point);
-    //    using var brush = new SolidBrush(Color.FromArgb(255, _watermarkFormatSetting.Value.Color));
-    //    using var stringFormat = new StringFormat(StringFormatFlags.NoClip);
-
-
-    //    graphics.ResetTransform();
-    //    if (_watermarkFormatSetting.Value.UseDiagonalLines)
-    //    {
-    //        graphics.RotateTransform(-45);
-    //    }
-
-    //    double screenDiagonal = Math.Round(Math.Sqrt(Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Width, 2) + Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Height, 2)));
-
-    //    int repeatCounts = _watermarkFormatSetting.Value.LinesCount;
-
-    //    int x = _watermarkFormatSetting.Value.UseDiagonalLines ? (int)screenDiagonal : Bounds.Height;
-
-    //    int spacer = x / repeatCounts;
-
-    //    int firstPoint = _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(-2, 2) : 0;
-
-    //    for (int i = firstPoint; i < repeatCounts + 2 + firstPoint; i++)
-    //    {
-    //        var point = new Point(-spacer * i, spacer * i);
-
-    //        if (_watermarkFormatSetting.Value.OutlineColor == null)
-    //        {
-    //            graphics.DrawString(text, font, brush, point, stringFormat);
-    //        }
-    //        else
-    //        {
-    //            using GraphicsPath graphicPath = new GraphicsPath();
-    //            using Pen pen = new Pen(_watermarkFormatSetting.Value.OutlineColor.Value, _watermarkFormatSetting.Value.OutlineWidth);
-    //            graphicPath.AddString(text, font.FontFamily, (int)font.Style, font.Size * 1.5f, point, stringFormat);
-
-    //            graphics.DrawPath(pen, graphicPath);
-    //            graphics.FillPath(brush, graphicPath);
-    //        }
-    //    }
-
-    //    _logger.LogTrace(_loggerExecutedText, nameof(DrawWatermarkText), Text);
-    //}
-
     private void TimeProcessPolicyCheck_Tick(object sender, EventArgs e)
     {
 #if !(DEBUG)
         _logger.LogTrace(_loggerExecutingText, nameof(TimeProcessPolicyCheck_Tick), Text);
 #endif
 
-        var allowedProcessesList = _processAccessPolicyOptions.AllowedProcessesList.Select(p => p.ToUpperInvariant()).ToArray();
-
-        if (allowedProcessesList.Length == 0)
+        if (ProcessAccessPolicyState.HideWatermark == null)
         {
-            Opacity = _watermarkFormatSetting.Value.OpacityF;
+            // this should not happen since the timer should be disabled if the HideWatermark is null
             return;
         }
 
-        var processes = Process
-            .GetProcesses()
-            .Where(p => allowedProcessesList.Contains(p.ProcessName.ToUpperInvariant()) && p.MainWindowHandle != IntPtr.Zero)
-            .ToArray();
-
-        foreach (var process in processes)
+        if (ProcessAccessPolicyState.HideWatermark.Value)
         {
-            var isMinimized = IsIconic(process.MainWindowHandle);
-            if (!isMinimized)
-            {
-                Opacity = _watermarkFormatSetting.Value.OpacityF;
-                return;
-            }
+            Opacity = 0f;
+        }
+        else
+        {
+            Opacity = _watermarkFormatSetting.Value.OpacityF;
         }
 
-        Opacity = 0f;
 
 #if !(DEBUG)
         _logger.LogTrace(_loggerExecutedText, nameof(TimeProcessPolicyCheck_Tick), Text);

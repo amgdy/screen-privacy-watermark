@@ -1,4 +1,5 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.MSGraph;
+using Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
 using Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 using System.Reflection;
 
@@ -8,8 +9,13 @@ internal static class WatermarkExtensions
 {
     public static HostApplicationBuilder ConfigureWatermark(this HostApplicationBuilder hostApplicationBuilder, ILogger? logger = null)
     {
-        hostApplicationBuilder.Services.AddOptions<WatermarkOptions>()
-           .BindConfiguration(WatermarkOptions.SectionName)
+        hostApplicationBuilder.Services.AddOptions<WatermarkLayoutOptions>()
+           .BindConfiguration(WatermarkLayoutOptions.SectionName)
+           .ValidateDataAnnotations()
+           .ValidateOnStart();
+
+        hostApplicationBuilder.Services.AddOptions<WatermarkFormatOptions>()
+           .BindConfiguration(WatermarkFormatOptions.SectionName)
            .ValidateDataAnnotations()
            .ValidateOnStart();
 

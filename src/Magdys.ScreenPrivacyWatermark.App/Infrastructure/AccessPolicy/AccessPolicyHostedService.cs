@@ -41,6 +41,13 @@ internal class AccessPolicyHostedService(ILogger<AccessPolicyHostedService> logg
            .OrderBy(p => p.Order)
            .ToList();
 
+        // if there is no policy enabled, grant access
+        if (policies.Count == 0)
+        {
+            logger.LogDebug("No enabled policies found. Granting access.");
+            return true;
+        }
+
         switch (evaluationMode)
         {
             case EvaluationMode.Any:

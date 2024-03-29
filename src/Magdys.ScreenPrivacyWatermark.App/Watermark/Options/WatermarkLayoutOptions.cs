@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Magdys.ScreenPrivacyWatermark.App.Watermark;
+namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
 
-public class WatermarkOptions
+public class WatermarkLayoutOptions
 {
     public const string SectionName = "Watermark";
 
@@ -12,5 +12,5 @@ public class WatermarkOptions
     [Required]
     public string DisconnectedPattern { get; set; } = "{UserName}";
 
-    public bool EnableCache { get; set; } = true;
+    public bool EnableWatermarkTextCache { get; set; } = true;
 }

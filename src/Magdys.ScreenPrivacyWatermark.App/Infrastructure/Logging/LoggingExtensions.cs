@@ -49,7 +49,7 @@ internal static class LoggingExtensions
         var loggingConfiguration = new LoggingConfiguration();
 
         var loggerName = "${callsite:includeNamespace=false}";
-        var layout = $"${{longdate:universalTime=true}}|v${{assembly-version:type=File}}|${{machinename}}|${{environment-user}}|${{pad:padding=5:inner=${{processid}}}}|${{pad:padding=5:inner=${{level:uppercase=true}}}}|{loggerName}|${{message:withexception=true}}";
+        var layout = $"${{longdate:universalTime=false}}|v${{assembly-version:type=File}}|${{machinename}}|${{environment-user}}|${{pad:padding=5:inner=${{processid}}}}|${{pad:padding=5:inner=${{level:uppercase=true}}}}|{loggerName}|${{message:withexception=true}}";
 
         var logfile = new FileTarget("logfile")
         {
@@ -61,7 +61,6 @@ internal static class LoggingExtensions
             ArchiveNumbering = ArchiveNumberingMode.Date,
             ArchiveDateFormat = "yyyyMMdd",
             MaxArchiveFiles = 60,
-            ConcurrentWrites = true,
         };
 
         var appInsightsTarget = new ApplicationInsightsTarget()
@@ -69,7 +68,6 @@ internal static class LoggingExtensions
             InstrumentationKey = "9eb42fac-0fe0-43e9-98a2-4f802b19bd36",
             Name = "appInsightsTarget",
             Layout = layout,
-
         };
 
         var contextProperties = new Dictionary<string, string>

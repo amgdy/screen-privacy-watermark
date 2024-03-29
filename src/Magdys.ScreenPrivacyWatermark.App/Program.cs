@@ -43,7 +43,6 @@ internal static class Program
                 .ConfigureAppConfiguration(args, loggerFactory.CreateLogger("Configuration"))
                 .ConfigureLogging(options =>
                 {
-                    options.UseShortLoggerName = false;
 #if DEBUG
                     options.FallbackLogLevel = NLog.LogLevel.Trace;
 #endif
@@ -63,8 +62,8 @@ internal static class Program
 #endif
                 })
                 .ConfigureSettings()
-                .ConfigureWatermark(logger)
                 .ConfigureAccessPolicies(logger)
+                .ConfigureWatermark(logger)
                 .ConfigureWinForms<MainForm, WatermarkForm>(options =>
                 {
                     options.CloseMainFormOnly = false;

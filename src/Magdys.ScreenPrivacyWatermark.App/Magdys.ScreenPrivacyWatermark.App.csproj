@@ -36,6 +36,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Using Include="Microsoft.Extensions.Configuration" />
+		<Using Include="Microsoft.Extensions.DependencyInjection" />
+		<Using Include="Microsoft.Extensions.Hosting" />
+		<Using Include="Microsoft.Extensions.Logging" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="IPNetwork2" Version="3.0.667" />
 		<PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.22.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
@@ -46,9 +53,9 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Graph" Version="5.45.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.59.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.59.0" />
+		<PackageReference Include="Microsoft.Graph" Version="5.46.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.0" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
 		<PackageReference Include="Polly.Core" Version="8.3.1" />
 	</ItemGroup>

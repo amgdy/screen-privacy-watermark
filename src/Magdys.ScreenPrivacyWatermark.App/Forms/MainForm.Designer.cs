@@ -32,6 +32,7 @@
             BackgroundWorkerDispatcher = new System.ComponentModel.BackgroundWorker();
             labelInfo = new Label();
             TimerOnlineStatus = new System.Windows.Forms.Timer(components);
+            TimeProcessAccessPolicyCheck = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
             // BackgroundWorkerDispatcher
@@ -55,6 +56,10 @@
             TimerOnlineStatus.Interval = 1000;
             TimerOnlineStatus.Tick += TimerOnlineStatus_Tick;
             // 
+            // TimeProcessAccessPolicyCheck
+            // 
+            TimeProcessAccessPolicyCheck.Tick += TimeProcessAccessPolicyCheck_Tick;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
@@ -64,7 +69,7 @@
             ControlBox = false;
             Controls.Add(labelInfo);
             FormBorderStyle = FormBorderStyle.None;
-            Margin = new Padding(1, 1, 1, 1);
+            Margin = new Padding(1);
             MaximizeBox = false;
             MdiChildrenMinimizedAnchorBottom = false;
             MinimizeBox = false;
@@ -84,5 +89,6 @@
         private System.ComponentModel.BackgroundWorker BackgroundWorkerDispatcher;
         private Label labelInfo;
         private System.Windows.Forms.Timer TimerOnlineStatus;
+        private System.Windows.Forms.Timer TimeProcessAccessPolicyCheck;
     }
 }
