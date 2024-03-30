@@ -122,7 +122,7 @@ public partial class MainForm : Form, IMainForm
         _logger.LogTrace("Executed  {e}.", nameof(BackgroundWorkerDispatcher_DoWork));
     }
 
-    private async Task ShowWatermarkFormsAsync()
+    private async ValueTask ShowWatermarkFormsAsync()
     {
         _logger.LogTrace("Executing {e}.", nameof(ShowWatermarkFormsAsync));
 

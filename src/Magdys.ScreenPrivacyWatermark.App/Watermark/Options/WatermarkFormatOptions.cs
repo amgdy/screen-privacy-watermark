@@ -37,7 +37,7 @@ public class WatermarkFormatOptions
 #if DEBUG
         set; // setter only while debugging
 #endif
-    } = TextRenderingHint.SingleBitPerPixel;
+    } = TextRenderingHint.SingleBitPerPixelGridFit;
 
     public bool UseDiagonalLines
     {

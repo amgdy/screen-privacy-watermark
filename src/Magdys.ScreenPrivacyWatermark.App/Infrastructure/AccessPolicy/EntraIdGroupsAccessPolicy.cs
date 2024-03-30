@@ -1,13 +1,11 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.MSGraph;
-using Microsoft.Graph;
-using Microsoft.Graph.Models;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
 
 internal class EntraIdGroupsAccessPolicy(
     ILogger<EntraIdGroupsAccessPolicy> logger,
     EntraIdGroupsAccessPolicyOptions options,
-    IServiceProvider serviceProvider) : IAccessPolicy
+    IGraphService graphService) : IAccessPolicy
 {
     public bool Enabled => options.AllowedGroupsIdsList.Length > 0;
 
@@ -23,32 +21,27 @@ internal class EntraIdGroupsAccessPolicy(
             return true;
         }
 
-        var microsoftGraphService = serviceProvider.GetService<MSGraphService>();
+        var allowedGroupsIds = new HashSet<Guid>();
 
-        if (microsoftGraphService == null)
+        foreach (var allowedGroupId in options.AllowedGroupsIdsList)
+        {
+            if (Guid.TryParse(allowedGroupId, out var allowedGroupIdGuid))
+            {
+                allowedGroupsIds.Add(allowedGroupIdGuid);
+            }
+        }
+
+        if (graphService == null)
         {
             logger.LogWarning("MicrosoftGraphService is not available. Skipping policy {PolicyName}", nameof(EntraIdGroupsAccessPolicy));
             return true;
         }
 
-        var client = microsoftGraphService.Client;
+        var userGroupsIds = await graphService.GetCurrentUserGroupIdsAsync();
 
-        var userGroupsIds = new List<string>();
+        userGroupsIds.IntersectWith(allowedGroupsIds);
 
-        var pageIterator = PageIterator<DirectoryObject, DirectoryObjectCollectionResponse>.CreatePageIterator(
-            client: client,
-            page: await client.Me.MemberOf.GetAsync(),
-            callback: (directoryObject) =>
-            {
-                userGroupsIds.Add(directoryObject.Id);
-                return true;
-            });
-
-        await pageIterator.IterateAsync();
-
-        var commonGroupIds = options.AllowedGroupsIdsList.Intersect(userGroupsIds);
-
-        var hasAccess = commonGroupIds.Any();
+        var hasAccess = userGroupsIds.Count > 0;
 
         logger.LogDebug("User {hasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(EntraIdGroupsAccessPolicy));
 

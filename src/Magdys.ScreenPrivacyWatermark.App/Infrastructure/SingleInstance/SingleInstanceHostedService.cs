@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.SingleInstance;
+﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.SingleInstance;
 
 internal class SingleInstanceHostedService(ILogger<SingleInstanceHostedService> logger, SingleInstanceOptions singleInstanceOptions) : IHostedService, IDisposable
 {

@@ -9,13 +9,16 @@ namespace Magdys.ScreenPrivacyWatermark.App.MSGraph;
 /// </summary>
 /// <param name="logger">The logger used for logging events in this class.</param>
 /// <param name="settings">The settings used for configuring the Microsoft Graph API.</param>
-public class MSGraphTokenProvider(ILogger<MSGraphTokenProvider> logger, IOptions<MSGraphOptions> settings) : IAccessTokenProvider
+public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOptions> settings) : IAccessTokenProvider
 {
     private readonly IPublicClientApplication _pcaWithBroker = PublicClientApplicationBuilder
         .Create(settings.Value.ClientId.ToString())
         .WithBroker(new BrokerOptions(BrokerOptions.OperatingSystems.Windows))
         .WithAuthority(settings.Value.Authority)
-        //.WithLogging((x, y, z) => logger.LogTrace("{x} {y} {z}", x, y, z), Microsoft.Identity.Client.LogLevel.Warning)
+        .WithLogging((level, message, containsPii) =>
+        {
+            logger.LogTrace("{level} {message} {containsPii}", level, message, containsPii);
+        }, logLevel: Microsoft.Identity.Client.LogLevel.Warning, enablePiiLogging: true, enableDefaultPlatformLogging: true)
         .Build();
 
     private readonly IPublicClientApplication _pca = PublicClientApplicationBuilder
@@ -62,12 +65,16 @@ public class MSGraphTokenProvider(ILogger<MSGraphTokenProvider> logger, IOptions
             _msalCacheHelper.RegisterCache(_pcaWithBroker.UserTokenCache);
 
         }
-        catch
+        catch(Exception exception)
         {
+            logger.LogCritical(exception, "Filed to acquire WAM token! of type {exceptionType}", exception.GetType());
+
+            // Another fallback to use Integrated Windows Authentication
+            logger.LogTrace("Fallback to use Integrated Windows Authentication.");
+
             try
             {
-                // Another fallback to use Integrated Windows Authentication
-                logger.LogTrace("Fallback to use Integrated Windows Authentication.");
+
                 authenticationResult = await _pca.AcquireTokenByIntegratedWindowsAuth(settings.Value.Scopes)
                    .ExecuteAsync(CancellationToken.None);
                 logger.LogTrace("Registering cache.");
@@ -125,6 +132,10 @@ public class MSGraphTokenProvider(ILogger<MSGraphTokenProvider> logger, IOptions
             }
         }
 
+        if (authenticationResult == null)
+        {
+            throw new InvalidOperationException("Failed to acquire token.");
+        }
 
         logger.LogTrace("Executed  {e}.", nameof(GetAuthorizationTokenAsync));
         return authenticationResult.AccessToken;

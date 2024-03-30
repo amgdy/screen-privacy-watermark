@@ -19,7 +19,7 @@ internal static class WatermarkExtensions
            .ValidateDataAnnotations()
            .ValidateOnStart();
 
-        hostApplicationBuilder.ConfigureMSGraph();
+        hostApplicationBuilder.ConfigureMSGraph(logger);
         hostApplicationBuilder.RegisterWatermarkSourcesWithOptionsDynamic(logger);
         hostApplicationBuilder.Services.AddSingleton<WatermarkManager>();
         return hostApplicationBuilder;

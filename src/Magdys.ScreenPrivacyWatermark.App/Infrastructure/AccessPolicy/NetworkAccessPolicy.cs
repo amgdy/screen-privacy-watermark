@@ -13,7 +13,7 @@ internal class NetworkAccessPolicy(ILogger<NetworkAccessPolicy> logger, NetworkA
         logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
 
         // Validate IP addresses in AllowedIPsList
-        var allowedIPs = new List<IPAddress>();
+        var allowedIPs = new HashSet<IPAddress>();
         foreach (var allowedIP in options.AllowedIPsList)
         {
             if (IPAddress.TryParse(allowedIP, out var allowed))
@@ -26,10 +26,10 @@ internal class NetworkAccessPolicy(ILogger<NetworkAccessPolicy> logger, NetworkA
             }
         }
 
+        var ipAddresses = await Dns.GetHostAddressesAsync(Dns.GetHostName());
+
         if (allowedIPs.Count > 0)
         {
-            var ipAddresses = await Dns.GetHostAddressesAsync(Dns.GetHostName());
-
             foreach (var ipAddress in ipAddresses)
             {
                 logger.LogDebug("Checking IP address: {IPAddress}", ipAddress);
@@ -60,7 +60,6 @@ internal class NetworkAccessPolicy(ILogger<NetworkAccessPolicy> logger, NetworkA
 
             if (allowedCidrs.Count > 0)
             {
-                var ipAddresses = await Dns.GetHostAddressesAsync(Dns.GetHostName());
                 foreach (var ipNetwork in allowedCidrs)
                 {
                     logger.LogDebug("Checking CIDR block: {CIDR}", ipNetwork);

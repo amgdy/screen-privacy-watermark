@@ -2,13 +2,13 @@
 using Magdys.ScreenPrivacyWatermark.App.Settings;
 using Polly;
 using Polly.Retry;
-using System.Globalization;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 
-internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger, EntraIdWatermarkSourceOptions options, MSGraphService graphService) : IWatermarkSource
+internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger, EntraIdWatermarkSourceOptions options, IGraphService graphService) : IWatermarkSource
 {
     public bool Enabled => options.Enabled;
+
     public async ValueTask<bool> IsConnectedAsync()
     {
         logger.LogTrace("Checking if connected to the internet and to Entra ID service online...");
@@ -75,15 +75,11 @@ internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger, En
 
         try
         {
-            var graphServiceClient = graphService.Client;
-
-            var user = await graphServiceClient.Me.GetAsync(requestConfiguration =>
-            {
-                requestConfiguration.QueryParameters.Select = options.AttributesArray;
-            });
+            var user = await graphService.GetCurrentUserDataAsync(options.AttributesArray);
 
             if (user != null)
             {
+                logger.LogDebug("Loading user {User} data", user.Id);
 
                 var entraData = user.BackingStore.Enumerate();
 

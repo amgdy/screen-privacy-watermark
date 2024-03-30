@@ -1,6 +1,5 @@
 ﻿using Microsoft.Win32;
 
-
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration.Registry;
 
 internal class RegistryConfigurationProvider(RegistryConfigurationOptions options, ILogger? logger) : ConfigurationProvider

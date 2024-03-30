@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration;
+﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration;
 
 internal class ConfigurationHostedService(ILogger<ConfigurationHostedService> logger, IConfiguration config) : IHostedService
 {

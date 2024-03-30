@@ -55,9 +55,9 @@ public class WatermarkManager(
         return _isConnected;
     }
 
-    public async ValueTask<bool> TryLoad()
+    public async ValueTask<bool> TryLoadAsync()
     {
-        logger.LogTrace("Executing {e}.", nameof(TryLoad));
+        logger.LogTrace("Executing {e}.", nameof(TryLoadAsync));
         var retryStrategyOptions = new RetryStrategyOptions
         {
             MaxRetryAttempts = 5,
@@ -121,7 +121,7 @@ public class WatermarkManager(
 
         _isConnected = connectionStatus.TrueForAll(c => c);
 
-        logger.LogTrace("Executed  {e}.", nameof(TryLoad));
+        logger.LogTrace("Executed  {e}.", nameof(TryLoadAsync));
         return true;
     }
 
@@ -152,7 +152,7 @@ public class WatermarkManager(
 
         await resiliencePipeline.ExecuteAsync(async context =>
                {
-                   if (!await TryLoad())
+                   if (!await TryLoadAsync())
                    {
                        throw new Exception("Failed to load watermark data.");
                    }

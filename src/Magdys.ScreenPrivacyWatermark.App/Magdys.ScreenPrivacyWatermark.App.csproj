@@ -43,6 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Azure.Identity" Version="1.10.4" />
 		<PackageReference Include="IPNetwork2" Version="3.0.667" />
 		<PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.22.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
