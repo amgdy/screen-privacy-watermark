@@ -1,4 +1,5 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Forms;
+using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
 using Magdys.ScreenPrivacyWatermark.App.Watermark;
 using NLog.Extensions.Logging;
 using System.Reflection;
@@ -26,8 +27,6 @@ internal static class Program
 
         WriteStartupLogs(logger, args);
 
-        IHost? host = null;
-
         try
         {
             var hostApplicationBuilderSettings = new HostApplicationBuilderSettings
@@ -40,7 +39,16 @@ internal static class Program
             var hostApplicationBuilder = Host.CreateEmptyApplicationBuilder(hostApplicationBuilderSettings);
 
             hostApplicationBuilder
-                .ConfigureAppConfiguration(args, loggerFactory.CreateLogger("Configuration"))
+                .ConfigureCachingAndConnectivity(options =>
+                {
+                    options.EnableEncryption = true;
+                    options.Logger = loggerFactory.CreateLogger("CachingService");
+                })
+                .ConfigureAppConfiguration(options =>
+                {
+                    options.EnableCommandLineConfiguration = false;
+                    options.Logger = loggerFactory.CreateLogger("AppConfiguration");
+                })
                 .ConfigureLogging(options =>
                 {
 #if DEBUG
@@ -51,7 +59,7 @@ internal static class Program
                 {
                     options.Enabled = true;
                     options.MutexId = Metadata.ApplicationId.ToString();
-                    options.OnAlreadyRunning = logger => logger.LogWarning("Application supports running single instance only!");
+                    options.OnAlreadyRunning = logger => logger.LogWarning("The application is designed to run only one instance at a time.");
                 })
                 .ConfigureProcessProtection(options =>
                 {
@@ -61,49 +69,44 @@ internal static class Program
                     options.Enabled = false;
 #endif
                 })
-                .ConfigureSettings()
                 .ConfigureAccessPolicies(logger)
                 .ConfigureWatermark(logger)
                 .ConfigureWinForms<MainForm, WatermarkForm>(options =>
                 {
                     options.CloseMainFormOnly = false;
                     options.Args = args;
-                })
+                });
 
-                ;
-
-
-            host = hostApplicationBuilder.Build();
+            using var host = hostApplicationBuilder.Build();
 
             await host.StartAsync();
-
+        }
+        catch (UiException uiex)
+        {
+            logger.LogCritical(uiex, "An internal application error has occurred.");
+            MessageBox.Show(uiex.Message, "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         catch (Exception ex)
         {
-            logger.LogCritical(ex, "Application terminated unexpectedly");
-            throw;
+            logger.LogCritical(ex, "The application has terminated unexpectedly.");
+            MessageBox.Show("An unexpected error has occurred in the application. Please contact your IT department for assistance.", "Application Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
             NLog.LogManager.Shutdown();
-            if (host != null)
-            {
-                await host.StopAsync();
-
-            }
         }
     }
 
     private static void WriteStartupLogs(ILogger logger, string[] args)
     {
         logger.LogInformation("──────────────────────────────────────────────────────");
-        logger.LogInformation("Starting {AppName} by {Company}...", Metadata.ApplicationNameLong, Metadata.CompanyNameLong);
-        logger.LogInformation("Application started by {Domain}\\{User}.", Environment.UserDomainName, Environment.UserName);
+        logger.LogInformation("Initiating {AppName} by {Company}...", Metadata.ApplicationNameLong, Metadata.CompanyNameLong);
+        logger.LogInformation("Application initiated by user: {Domain}\\{User}.", Environment.UserDomainName, Environment.UserName);
         logger.LogInformation(
-             "Application version {version} is running on {@frameworkDescription}.",
+             "Running application version {Version} on {@FrameworkDescription}.",
              Assembly.GetEntryAssembly()?.GetName().Version,
              System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
 
-        logger.LogInformation("Application started with arguments: {@args}.", args);
+        logger.LogInformation("Application initiated with arguments: {@Args}.", args);
     }
 }

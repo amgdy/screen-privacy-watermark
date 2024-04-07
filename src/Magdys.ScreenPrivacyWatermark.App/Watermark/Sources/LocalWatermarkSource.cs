@@ -6,10 +6,7 @@ public class LocalWatermarkSource(ILogger<LocalWatermarkSource> logger, LocalWat
 {
     public bool Enabled => options.Enabled;
 
-    public ValueTask<bool> IsConnectedAsync()
-    {
-        return ValueTask.FromResult(true);
-    }
+    public bool RequiresConnectivity => false;
 
     public ValueTask<Dictionary<string, string>> LoadAsync(bool reload = false)
     {

@@ -14,8 +14,8 @@ public partial class WatermarkForm : Form
     private bool _isFormClosingSubscribed = true;
     private bool _isInitialized = false;
     private WatermarkFormOptions _watermarkFormOptions = null;
-    private const string _loggerExecutingText = "Executing {method} for '{text}'";
-    private const string _loggerExecutedText = "Executed {method} for '{text}'";
+    private const string _loggerExecutingText = "Executing {Method} for '{text}'";
+    private const string _loggerExecutedText = "Executed {Method} for '{text}'";
 
     public WatermarkForm(ILogger<WatermarkForm> logger, IOptions<WatermarkFormatOptions> watermarkFormatSetting)
     {
@@ -73,7 +73,7 @@ public partial class WatermarkForm : Form
     {
         _logger.LogTrace(_loggerExecutingText, nameof(WatermarkForm_FormClosing), Text);
 
-        _logger.LogDebug("Form closing reason: {reason}", e.CloseReason);
+        _logger.LogDebug("Form closing reason: {Reason}", e.CloseReason);
 
         switch (e.CloseReason)
         {

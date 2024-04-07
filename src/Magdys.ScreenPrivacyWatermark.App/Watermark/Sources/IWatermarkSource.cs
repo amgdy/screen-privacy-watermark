@@ -4,7 +4,7 @@ public interface IWatermarkSource
 {
     bool Enabled { get; }
 
-    ValueTask<bool> IsConnectedAsync();
+    bool RequiresConnectivity { get; }
 
     ValueTask<Dictionary<string, string>> LoadAsync(bool reload = false);
 }

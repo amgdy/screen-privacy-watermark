@@ -1,4 +1,5 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Core;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
+using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Core;
 
 namespace Magdys.ScreenPrivacyWatermark.App;
 
@@ -8,6 +9,7 @@ internal static class CoreExtensions
     {
         var options = new CoreOptions();
         configureOptions?.Invoke(options);
+        hostApplicationBuilder.Services.AddSingleton<ConnectivityService>();
         hostApplicationBuilder.Services.AddSingleton(options);
         hostApplicationBuilder.Services.AddSingleton<TForm>();
         hostApplicationBuilder.Services.AddSingleton<IMainForm, TForm>();

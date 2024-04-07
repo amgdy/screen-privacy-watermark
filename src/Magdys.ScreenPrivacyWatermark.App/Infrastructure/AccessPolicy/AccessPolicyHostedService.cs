@@ -1,36 +1,37 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
+using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
 using Microsoft.Extensions.Options;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Policy;
 
-internal class AccessPolicyHostedService(ILogger<AccessPolicyHostedService> logger, IOptions<AccessPolicyOptions> options, IServiceProvider serviceProvider) : IHostedService
+internal class AccessPolicyHostedService(ILogger<AccessPolicyHostedService> logger, IOptions<AccessPolicyOptions> options, IServiceProvider serviceProvider, ConnectivityService connectivityService) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StartAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StartAsync));
 
         var hasAccess = await EvaulateAccessPolicies();
 
         if (!hasAccess)
         {
             logger.LogTrace("Access denied. Exiting application.");
-            Environment.Exit(0);
+            Application.Exit();
         }
 
         logger.LogTrace("Access granted.");
-        logger.LogTrace("Executed {method}.", nameof(StartAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StartAsync));
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StopAsync));
-        logger.LogTrace("Executed {method}.", nameof(StopAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StopAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StopAsync));
         return Task.CompletedTask;
     }
 
     private async Task<bool> EvaulateAccessPolicies()
     {
-        logger.LogTrace("Executing {method}.", nameof(EvaulateAccessPolicies));
+        logger.LogTrace("Executing {Method}.", nameof(EvaulateAccessPolicies));
 
         var evaluationMode = options.Value.EvaluationMode;
         logger.LogDebug("Evaluation mode: {EvaluationMode}", evaluationMode);
@@ -48,12 +49,21 @@ internal class AccessPolicyHostedService(ILogger<AccessPolicyHostedService> logg
             return true;
         }
 
+        var isConnected = await connectivityService.IsConnectedAsync();
+
         switch (evaluationMode)
         {
             case EvaluationMode.Any:
                 foreach (var policy in policies)
                 {
                     logger.LogDebug("Policy {PolicyName} is enabled and has order {Order}", policy.GetType().Name, policy.Order);
+
+                    if (policy.RequiresConnectivity && !isConnected)
+                    {
+                        logger.LogWarning("Validation of policy {PolicyName} has been skipped due to its requirement for internet connectivity and the current offline status of the system.", policy.GetType().Name);
+
+                        continue;
+                    }
 
                     var hasAccess = await policy.CheckAccessAsync();
                     if (hasAccess)
@@ -69,6 +79,13 @@ internal class AccessPolicyHostedService(ILogger<AccessPolicyHostedService> logg
                 foreach (var policy in policies)
                 {
                     logger.LogDebug("Policy {PolicyName} is enabled and has order {Order}", policy.GetType().Name, policy.Order);
+
+                    if (policy.RequiresConnectivity && !isConnected)
+                    {
+                        logger.LogWarning("Validation of policy {PolicyName} has been skipped due to its requirement for internet connectivity and the current offline status of the system.", policy.GetType().Name);
+
+                        continue;
+                    }
 
                     var hasAccess = await policy.CheckAccessAsync();
                     if (!hasAccess)

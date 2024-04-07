@@ -1,63 +1,16 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.MSGraph;
-using Magdys.ScreenPrivacyWatermark.App.Settings;
-using Polly;
-using Polly.Retry;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
+using Magdys.ScreenPrivacyWatermark.App.MSGraph;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 
-internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger, EntraIdWatermarkSourceOptions options, IGraphService graphService) : IWatermarkSource
+internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger,
+    EntraIdWatermarkSourceOptions options,
+    IGraphService graphService,
+    ConnectivityService connectivityService) : IWatermarkSource
 {
     public bool Enabled => options.Enabled;
 
-    public async ValueTask<bool> IsConnectedAsync()
-    {
-        logger.LogTrace("Checking if connected to the internet and to Entra ID service online...");
-        using var httpClient = new HttpClient();
-
-        try
-        {
-            var retryStrategyOptions = new RetryStrategyOptions
-            {
-                ShouldHandle = new PredicateBuilder().Handle<HttpRequestException>(),
-                MaxRetryAttempts = 3,
-                OnRetry = args =>
-                {
-                    logger.LogDebug("OnRetry, Attempt: {AttemptNumber}", args.AttemptNumber);
-
-                    // Event handlers can be asynchronous; here, we return an empty ValueTask.
-                    return default;
-                }
-            };
-
-            var resiliencePipeline = new ResiliencePipelineBuilder()
-            .AddRetry(retryStrategyOptions)
-            .AddTimeout(TimeSpan.FromSeconds(3))
-            .Build();
-
-            var connected = false;
-
-            await resiliencePipeline.ExecuteAsync(async context =>
-            {
-                var response = await httpClient.GetAsync(EntraIdSettings.AuthorityBase, context);
-
-                // If the status code is OK, the website is available
-                if (response.IsSuccessStatusCode)
-                {
-                    connected = true;
-                }
-            });
-
-            return connected;
-        }
-        catch (Exception ex)
-        {
-
-            logger.LogCritical(ex, "Failed to check if you are connected to Entra ID or not.");
-        }
-
-        logger.LogTrace("Checked if connected to the internet and to Entra ID service online.");
-        return false;
-    }
+    public bool RequiresConnectivity => true;
 
     private Dictionary<string, string>? _loadedData = null;
 
@@ -69,6 +22,12 @@ internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger, En
         {
             logger.LogTrace("Data is already loaded, returning the loaded data.");
             return _loadedData;
+        }
+
+        if (!await connectivityService.IsConnectedAsync())
+        {
+            logger.LogWarning("Failed to connect to Azure AD Authority URL, cannot load Entra ID watermark data.");
+            throw new InternalException("Failed to connect to Azure AD Authority URL, cannot load Entra ID watermark data.");
         }
 
         var data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);

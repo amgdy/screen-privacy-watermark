@@ -2,7 +2,7 @@
 
 internal class LoggingOptions
 {
-    public string LogLevelConfigKey { get; set; } = "app:LogLevel";
+    public string LogLevelConfigKey { get; set; } = "LogLevel";
 
     public NLog.LogLevel FallbackLogLevel { get; set; } = NLog.LogLevel.Info;
 }

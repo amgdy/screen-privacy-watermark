@@ -17,14 +17,14 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
         .WithAuthority(settings.Value.Authority)
         .WithLogging((level, message, containsPii) =>
         {
-            logger.LogTrace("{level} {message} {containsPii}", level, message, containsPii);
+            logger.LogTrace("{Level} {Message} {ContainsPii}", level, message, containsPii);
         }, logLevel: Microsoft.Identity.Client.LogLevel.Warning, enablePiiLogging: true, enableDefaultPlatformLogging: true)
         .Build();
 
     private readonly IPublicClientApplication _pca = PublicClientApplicationBuilder
         .Create(settings.Value.ClientId.ToString())
         .WithAuthority(settings.Value.Authority)
-        .WithLogging((x, y, z) => logger.LogTrace("{x} {y} {z}", x, y, z), Microsoft.Identity.Client.LogLevel.Warning)
+        .WithLogging((level, message, containsPii) => logger.LogTrace("{Level} {Message} {ContainsPii}", level, message, containsPii), Microsoft.Identity.Client.LogLevel.Warning)
         .Build();
 
     private readonly MsalCacheHelper _msalCacheHelper = CreateCacheHelperAsync().GetAwaiter().GetResult();
@@ -33,7 +33,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
 
     public async Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
     {
-        logger.LogTrace("Executing {e}.", nameof(GetAuthorizationTokenAsync));
+        logger.LogTrace("Executing {Method}.", nameof(GetAuthorizationTokenAsync));
         logger.LogTrace("Getting accounts from the broker.");
         var accounts = await _pcaWithBroker.GetAccountsAsync();
 
@@ -45,7 +45,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
         {
             if (account == null)
             {
-                logger.LogTrace("Account not found. Using {account}.", PublicClientApplication.OperatingSystemAccount);
+                logger.LogTrace("Account not found. Using {Account}.", PublicClientApplication.OperatingSystemAccount);
 
                 logger.LogTrace("Acquiring token silently.");
                 authenticationResult = await _pcaWithBroker
@@ -54,7 +54,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
             }
             else
             {
-                logger.LogTrace("Account found: {account}.", account);
+                logger.LogTrace("Account found: {Account}.", account);
                 logger.LogTrace("Acquiring token silently.");
                 authenticationResult = await _pcaWithBroker
                     .AcquireTokenSilent(settings.Value.Scopes, account)
@@ -65,9 +65,9 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
             _msalCacheHelper.RegisterCache(_pcaWithBroker.UserTokenCache);
 
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
-            logger.LogCritical(exception, "Filed to acquire WAM token! of type {exceptionType}", exception.GetType());
+            logger.LogCritical(exception, "Failed to acquire WAM token! of type {ExceptionType}", exception.GetType());
 
             // Another fallback to use Integrated Windows Authentication
             logger.LogTrace("Fallback to use Integrated Windows Authentication.");
@@ -95,7 +95,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
                 // There is no mitigation - if MFA is configured for your tenant and Azure AD decides to enforce it,
                 // you need to fallback to an interactive flows such as AcquireTokenInteractive or AcquireTokenByDeviceCode
 
-                logger.LogCritical(ex, "Error acquiring token of type {type}.", typeof(MsalUiRequiredException));
+                logger.LogCritical(ex, "Error acquiring token of type {Type}.", typeof(MsalUiRequiredException));
             }
             catch (MsalServiceException ex)
             {
@@ -109,7 +109,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
                 // Explanation: this can happen if your application was not registered as a public client application in Azure AD
                 // Mitigation: in the Azure portal, edit the manifest for your application and set the `allowPublicClient` to `true`
 
-                logger.LogCritical(ex, "Error acquiring token of type {type}.", typeof(MsalServiceException));
+                logger.LogCritical(ex, "Error acquiring token of type {Type}.", typeof(MsalServiceException));
             }
             catch (MsalClientException ex)
             {
@@ -137,13 +137,13 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
             throw new InvalidOperationException("Failed to acquire token.");
         }
 
-        logger.LogTrace("Executed  {e}.", nameof(GetAuthorizationTokenAsync));
+        logger.LogTrace("Executed  {Method}.", nameof(GetAuthorizationTokenAsync));
         return authenticationResult.AccessToken;
     }
 
     private static async Task<MsalCacheHelper> CreateCacheHelperAsync()
     {
-        var fileName = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.msalcache.bin";
+        var fileName = $"{Metadata.ApplicationNameShort}.msal.cache";
 
         var storageProperties = new StorageCreationPropertiesBuilder(fileName, Metadata.ApplicationDataPath)
             .WithUnprotectedFile()

@@ -6,5 +6,7 @@ internal interface IAccessPolicy
 
     int Order { get; }
 
+    bool RequiresConnectivity { get; }
+
     Task<bool> CheckAccessAsync();
 }

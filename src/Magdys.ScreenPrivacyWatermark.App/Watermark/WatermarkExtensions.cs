@@ -21,7 +21,7 @@ internal static class WatermarkExtensions
 
         hostApplicationBuilder.ConfigureMSGraph(logger);
         hostApplicationBuilder.RegisterWatermarkSourcesWithOptionsDynamic(logger);
-        hostApplicationBuilder.Services.AddSingleton<WatermarkManager>();
+        hostApplicationBuilder.Services.AddSingleton<WatermarkContext>();
         return hostApplicationBuilder;
     }
 
@@ -38,7 +38,7 @@ internal static class WatermarkExtensions
             var sectionName = GetPolicyOptionSectionName(type);
             var section = hostApplicationBuilder.Configuration.GetSection(sectionName);
 
-            logger?.LogDebug("Option: {name} Value: {@Value}", type.Name, section);
+            logger?.LogDebug("Option: {Name} Value: {@Value}", type.Name, section);
 
             // Use reflection to create an instance of the options type
             var optionsInstance = Activator.CreateInstance(type);

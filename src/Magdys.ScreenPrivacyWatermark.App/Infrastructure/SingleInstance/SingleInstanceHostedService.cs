@@ -8,7 +8,7 @@ internal class SingleInstanceHostedService(ILogger<SingleInstanceHostedService> 
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StartAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StartAsync));
         try
         {
             if (!singleInstanceOptions.Enabled)
@@ -25,7 +25,7 @@ internal class SingleInstanceHostedService(ILogger<SingleInstanceHostedService> 
                 singleInstanceOptions.OnAlreadyRunning?.Invoke(logger);
 
                 logger.LogTrace("Exiting application due to already running instance.");
-                Environment.Exit(0);
+                Application.Exit();
             }
 
             logger.LogTrace("Mutex created successfully.");
@@ -35,30 +35,30 @@ internal class SingleInstanceHostedService(ILogger<SingleInstanceHostedService> 
         {
             // Another instance didn't cleanup correctly!
             // we can ignore the exception, it happened on the "WaitOne" but still the mutex belongs to us
-            logger.LogWarning(e, "{appName} didn't cleanup correctly, but we got the mutex {mutexId}.", Metadata.ApplicationNameShort, singleInstanceOptions.MutexId);
+            logger.LogWarning(e, "{AppName} didn't cleanup correctly, but we got the mutex {MutexId}.", Metadata.ApplicationNameShort, singleInstanceOptions.MutexId);
         }
         catch (UnauthorizedAccessException e)
         {
-            logger.LogError(e, "{appName} is most likely already running for a different user in the same session, can't create/get mutex {mutexId} due to error.", Metadata.ApplicationNameShort, singleInstanceOptions.MutexId);
+            logger.LogError(e, "{AppName} is most likely already running for a different user in the same session, can't create/get mutex {MutexId} due to error.", Metadata.ApplicationNameShort, singleInstanceOptions.MutexId);
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Problem obtaining the Mutex {mutexId} for {appName}, assuming it was already taken!", Metadata.ApplicationNameShort, singleInstanceOptions.MutexId);
+            logger.LogError(exception, "Problem obtaining the Mutex {MutexId} for {AppName}, assuming it was already taken!", singleInstanceOptions.MutexId, Metadata.ApplicationNameShort);
         }
 
-        logger.LogTrace("Executed {method}.", nameof(StartAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StartAsync));
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StopAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StopAsync));
         if (_mutex != null && _isMutexCreated && _mutex.WaitOne(0))
         {
             _mutex.ReleaseMutex();
         }
 
-        logger.LogTrace("Executed {method}.", nameof(StopAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StopAsync));
         return Task.CompletedTask;
     }
 

@@ -9,7 +9,7 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StartAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StartAsync));
         if (cancellationToken.IsCancellationRequested)
         {
             return Task.CompletedTask;
@@ -28,19 +28,19 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
             logger.LogInformation("Process protection is skipped");
         }
 
-        logger.LogTrace("Executed {method}.", nameof(StartAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StartAsync));
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StopAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StopAsync));
         return Task.CompletedTask;
     }
 
     private void Protect()
     {
-        logger.LogTrace("Executing {method}.", nameof(Protect));
+        logger.LogTrace("Executing {Method}.", nameof(Protect));
 
         // Get the current process handle
         logger.LogTrace("Getting the current process handle.");
@@ -59,7 +59,8 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
 
         // Allocate the required bytes and obtain the DACL
         logger.LogTrace("Allocating required bytes and obtaining the DACL.");
-        if (!GetKernelObjectSecurity(hProcess, DACL_SECURITY_INFORMATION, psd = new byte[bufSizeNeeded], bufSizeNeeded, out _))
+        byte[] pSecurityDescriptor = psd = new byte[bufSizeNeeded];
+        if (!GetKernelObjectSecurity(hProcess, DACL_SECURITY_INFORMATION, pSecurityDescriptor, bufSizeNeeded, out _))
         {
             throw new Win32Exception();
         }
@@ -79,6 +80,6 @@ internal class ProcessProtectionHostedService(ILogger<ProcessProtectionHostedSer
             throw new Win32Exception();
         }
 
-        logger.LogTrace("Executed {method}.", nameof(Protect));
+        logger.LogTrace("Executed {Method}.", nameof(Protect));
     }
 }

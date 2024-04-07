@@ -1,4 +1,4 @@
-﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure;
+﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Extensions;
 
 internal static class Extensions
 {
@@ -54,7 +54,7 @@ internal static class Extensions
                         logger?.LogTrace("Retry {RetryNumber} of {TotalRetries} timed out.", i + 1, retries);
 
                         // If this is the last retry or the retry condition is not met, execute the timeout action and break the loop
-                        if (i == retries - 1 || (retryCondition != null && !await retryCondition()))
+                        if (i == retries - 1 || retryCondition != null && !await retryCondition())
                         {
                             // Log the execution of the timeout action
                             logger?.LogTrace("All retries timed out. Executing timeout action.");
@@ -82,7 +82,6 @@ internal static class Extensions
                 {
                     // Log any error that occurs during a retry
                     logger?.LogError(ex, "An error occurred during retry {RetryNumber} of {TotalRetries}.", i + 1, retries);
-                    throw;
                 }
             }
         }

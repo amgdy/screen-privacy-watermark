@@ -1,7 +1,7 @@
 ﻿using DnsClient.Internal;
 using Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
+using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
 using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Core;
-using Magdys.ScreenPrivacyWatermark.App.Settings;
 using Magdys.ScreenPrivacyWatermark.App.Watermark;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -16,27 +16,39 @@ public partial class MainForm : Form, IMainForm
 
     private readonly IServiceProvider _serviceProvider;
     private readonly ProcessAccessPolicyOptions _processAccessPolicyOptions;
-    private readonly WatermarkManager _watermarkManager;
+    private readonly WatermarkContext _watermarkContext;
+    private readonly ConnectivityService _connectivityService;
     private bool _isDisplaySettingsChanged = true;
+
+    private readonly HashSet<string> _allowedProcessNames;
+    private readonly Regex[] _allowedProcessRegexes;
+
 
     public MainForm(ILogger<MainForm> logger,
         IServiceProvider serviceProvider,
         ProcessAccessPolicyOptions processAccessPolicyOptions,
-        WatermarkManager watermarkManager)
+        WatermarkContext watermarkContext,
+        ConnectivityService connectivityService)
     {
         InitializeComponent();
         _logger = logger;
         _serviceProvider = serviceProvider;
         _processAccessPolicyOptions = processAccessPolicyOptions;
-        _watermarkManager = watermarkManager;
+        _watermarkContext = watermarkContext;
+        _connectivityService = connectivityService;
+        _allowedProcessNames = new HashSet<string>(_processAccessPolicyOptions.AllowedProcessesList, StringComparer.OrdinalIgnoreCase);
+        _allowedProcessRegexes = _processAccessPolicyOptions.EnableWildcardNames
+            ? _processAccessPolicyOptions.AllowedProcessesList.Select(p => new Regex(p.Replace(".", @"\.").Replace("*", ".*"), RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromSeconds(0.5))).ToArray()
+            : null!;
+
         Microsoft.Win32.SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
     }
 
     private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
     {
-        _logger.LogTrace("Executing {e}.", nameof(SystemEvents_DisplaySettingsChanged));
+        _logger.LogTrace("Executing {Method}.", nameof(SystemEvents_DisplaySettingsChanged));
         _isDisplaySettingsChanged = true;
-        _logger.LogTrace("Executed  {e}.", nameof(SystemEvents_DisplaySettingsChanged));
+        _logger.LogTrace("Executed  {Method}.", nameof(SystemEvents_DisplaySettingsChanged));
     }
 
     protected override CreateParams CreateParams
@@ -56,7 +68,7 @@ public partial class MainForm : Form, IMainForm
 
     private async void MainForm_Load(object sender, EventArgs e)
     {
-        _logger.LogTrace("Executing {e}.", nameof(MainForm_Load));
+        _logger.LogTrace("Executing {Method}.", nameof(MainForm_Load));
 
         if (_processAccessPolicyOptions.AllowedProcessesList.Length > 0)
         {
@@ -69,14 +81,14 @@ public partial class MainForm : Form, IMainForm
 
         BackgroundWorkerDispatcher.RunWorkerAsync();
 
-        _logger.LogTrace("Executed  {e}.", nameof(MainForm_Load));
+        _logger.LogTrace("Executed  {Method}.", nameof(MainForm_Load));
     }
 
     private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
     {
-        _logger.LogTrace("Executing {e}.", nameof(MainForm_FormClosing));
+        _logger.LogTrace("Executing {Method}.", nameof(MainForm_FormClosing));
 
-        _logger.LogDebug("Form closing reason: {reason}", e.CloseReason);
+        _logger.LogDebug("Form closing reason: {Reason}", e.CloseReason);
 
         switch (e.CloseReason)
         {
@@ -84,18 +96,18 @@ public partial class MainForm : Form, IMainForm
             case CloseReason.MdiFormClosing:
             case CloseReason.UserClosing:
             case CloseReason.TaskManagerClosing:
-            //case CloseReason.ApplicationExitCall:
+                //case CloseReason.ApplicationExitCall:
                 e.Cancel = true;
                 _logger.LogDebug("Form closing CANCELLED");
                 break;
         }
 
-        _logger.LogTrace("Executed  {e}.", nameof(MainForm_FormClosing));
+        _logger.LogTrace("Executed  {Method}.", nameof(MainForm_FormClosing));
     }
 
     private async void BackgroundWorkerDispatcher_DoWork(object sender, DoWorkEventArgs e)
     {
-        _logger.LogTrace("Executing {e}.", nameof(BackgroundWorkerDispatcher_DoWork));
+        _logger.LogTrace("Executing {Method}.", nameof(BackgroundWorkerDispatcher_DoWork));
 
         bool isFirstIteration = true;
 
@@ -108,10 +120,10 @@ public partial class MainForm : Form, IMainForm
                 _isDisplaySettingsChanged = false;
             }
 
-            if (isFirstIteration && !await _watermarkManager.IsConnectedAsync())
+            if (isFirstIteration && !await _connectivityService.IsConnectedAsync())
             {
                 // Enable your timers here
-                TimerOnlineStatus.Enabled = true;
+                BeginInvoke(new Action(() => { TimerOnlineStatus.Enabled = true; }));
             }
 
             isFirstIteration = false;
@@ -119,12 +131,12 @@ public partial class MainForm : Form, IMainForm
             await Task.Delay(1000);
         }
 
-        _logger.LogTrace("Executed  {e}.", nameof(BackgroundWorkerDispatcher_DoWork));
+        _logger.LogTrace("Executed  {Method}.", nameof(BackgroundWorkerDispatcher_DoWork));
     }
 
     private async ValueTask ShowWatermarkFormsAsync()
     {
-        _logger.LogTrace("Executing {e}.", nameof(ShowWatermarkFormsAsync));
+        _logger.LogTrace("Executing {Method}.", nameof(ShowWatermarkFormsAsync));
 
         var openedForms = Application.OpenForms.OfType<WatermarkForm>().ToArray();
 
@@ -133,7 +145,7 @@ public partial class MainForm : Form, IMainForm
             openedForm.ForceClose();
         }
 
-        var watermarkText = await _watermarkManager.GetWatermarkText();
+        var watermarkText = await _watermarkContext.GetWatermarkText();
 
         foreach (var screen in Screen.AllScreens)
         {
@@ -144,90 +156,111 @@ public partial class MainForm : Form, IMainForm
                 .Show();
         }
 
-        _logger.LogTrace("Executed {e}.", nameof(ShowWatermarkFormsAsync));
+        _logger.LogTrace("Executed {Method}.", nameof(ShowWatermarkFormsAsync));
     }
 
     private async void TimerOnlineStatus_Tick(object sender, EventArgs e)
     {
-        _logger.LogTrace("Executing {e}.", nameof(TimerOnlineStatus_Tick));
-        while (!await _watermarkManager.IsConnectedAsync())
+        _logger.LogTrace("Executing {Method}.", nameof(TimerOnlineStatus_Tick));
+        if (await _connectivityService.IsConnectedAsync())
         {
-            await Task.Delay(5000);
+            await ShowWatermarkFormsAsync();
+            TimerOnlineStatus.Enabled = false;
         }
 
-        await ShowWatermarkFormsAsync();
-        _logger.LogTrace("Executed {e}.", nameof(TimerOnlineStatus_Tick));
+        _logger.LogTrace("Executed {Method}.", nameof(TimerOnlineStatus_Tick));
     }
+
+    private int _timeProcessAccessPolicyCheckFailures = 0;
 
     private void TimeProcessAccessPolicyCheck_Tick(object sender, EventArgs e)
     {
 
 #if !(DEBUG)
-        _logger.LogTrace("Executing {e}.", nameof(TimeProcessAccessPolicyCheck_Tick));
+        _logger.LogTrace("Executing {Method}.", nameof(TimeProcessAccessPolicyCheck_Tick));
 #endif
         if (_processAccessPolicyOptions.AllowedProcessesList.Length == 0)
         {
             return;
         }
 
-        // this feature is an expensive operation, so we need to measure the time it takes to execute
-        var timestamp = Stopwatch.GetTimestamp();
-
-        var allowedProcessList = _processAccessPolicyOptions.EnableWildcardNames
-            ? _processAccessPolicyOptions.AllowedProcessesList.Select(p => p.Replace(".", @"\.").Replace("*", ".*")).ToHashSet(StringComparer.OrdinalIgnoreCase)
-            : new HashSet<string>(_processAccessPolicyOptions.AllowedProcessesList, StringComparer.OrdinalIgnoreCase);
-
-
-        var allProcessesWithWindows = Process
-            .GetProcesses()
-            .Where(p => p.MainWindowHandle != IntPtr.Zero)
-            .ToArray();
-
-        var filteredProcesses = new List<Process>();
-        foreach (var processWithWindow in allProcessesWithWindows)
+        try
         {
-            if (_processAccessPolicyOptions.EnableWildcardNames)
-            {
-                foreach (var allowedProcess in allowedProcessList)
-                {
+            // this feature is an expensive operation, so we need to measure the time it takes to execute
+            var timestamp = Stopwatch.GetTimestamp();
 
-                    if (Regex.IsMatch(processWithWindow.ProcessName, allowedProcess, RegexOptions.IgnoreCase, TimeSpan.FromSeconds(0.5)))
+            var allProcessesWithWindows = Process
+                .GetProcesses()
+                .Where(p => p.MainWindowHandle != IntPtr.Zero)
+                .ToArray();
+
+            var filteredProcesses = new List<Process>();
+
+            if (_processAccessPolicyOptions.EnableWildcardNames && _allowedProcessRegexes is not null)
+            {
+                foreach (var processWithWindow in allProcessesWithWindows)
+                {
+                    foreach (var regex in _allowedProcessRegexes)
                     {
-                        filteredProcesses.Add(processWithWindow);
+                        if (regex.IsMatch(processWithWindow.ProcessName))
+                        {
+                            filteredProcesses.Add(processWithWindow);
+                        }
                     }
                 }
             }
             else
             {
-                if (allowedProcessList.Contains(processWithWindow.ProcessName))
+                foreach (var processWithWindow in allProcessesWithWindows)
                 {
-                    filteredProcesses.Add(processWithWindow);
+                    if (_allowedProcessNames.Contains(processWithWindow.ProcessName))
+                    {
+                        filteredProcesses.Add(processWithWindow);
+                    }
                 }
             }
-        }
 
-        foreach (var process in filteredProcesses)
-        {
-            var isMinimized = IsIconic(process.MainWindowHandle);
-            if (!isMinimized)
+
+            foreach (var process in filteredProcesses)
             {
-                ProcessAccessPolicyState.HideWatermark = false;
-                return;
+                var isMinimized = IsIconic(process.MainWindowHandle);
+                if (!isMinimized)
+                {
+                    ProcessAccessPolicyState.HideWatermark = false;
+                    return;
+                }
+
             }
 
+            ProcessAccessPolicyState.HideWatermark = true;
+
+            var elapsed = Stopwatch.GetElapsedTime(timestamp);
+
+            _logger.LogDebug("Process access policy check took {Elapsed} ms", elapsed.Milliseconds);
+            _timeProcessAccessPolicyCheckFailures = 0; // reset the failure count if the operation was successful
+
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred during the process access policy check.");
+            _timeProcessAccessPolicyCheckFailures++;
 
-        ProcessAccessPolicyState.HideWatermark = true;
+            if (_timeProcessAccessPolicyCheckFailures >= 3)
+            {
+                _logger.LogWarning("Disabling the timer due to repeated failures.");
+                TimeProcessAccessPolicyCheck.Enabled = false;
 
-
-        var elapsed = Stopwatch.GetElapsedTime(timestamp);
-
-        _logger.LogDebug("Process access policy check took {elapsed} ms", elapsed.Milliseconds);
-
-
+                // enforce the watermark to be shown in case of repeated failures
+                ProcessAccessPolicyState.HideWatermark = false;
+            }
+        }
+        finally
+        {
 #if !(DEBUG)
-        _logger.LogTrace("Executed {e}.", nameof(TimeProcessAccessPolicyCheck_Tick));
+        _logger.LogTrace("Executed {Method}.", nameof(TimeProcessAccessPolicyCheck_Tick));
 #endif
-
+        }
     }
+
+
 }

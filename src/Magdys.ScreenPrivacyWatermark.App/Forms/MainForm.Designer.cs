@@ -53,7 +53,7 @@
             // 
             // TimerOnlineStatus
             // 
-            TimerOnlineStatus.Interval = 1000;
+            TimerOnlineStatus.Interval = 5000;
             TimerOnlineStatus.Tick += TimerOnlineStatus_Tick;
             // 
             // TimeProcessAccessPolicyCheck
@@ -62,8 +62,8 @@
             // 
             // MainForm
             // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
-            AutoScaleMode = AutoScaleMode.Dpi;
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             ClientSize = new Size(720, 440);
             ControlBox = false;

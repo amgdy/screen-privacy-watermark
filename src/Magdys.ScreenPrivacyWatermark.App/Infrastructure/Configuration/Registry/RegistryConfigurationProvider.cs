@@ -52,7 +52,7 @@ internal class RegistryConfigurationProvider(RegistryConfigurationOptions option
             string[] keyNames = key.GetSubKeyNames();
             foreach (string keyName in keyNames)
             {
-                using var subKey = key.OpenSubKey(keyName) ?? throw new Exception($"Failed to open subkey: {keyName}");
+                using var subKey = key.OpenSubKey(keyName) ?? throw new InternalException($"Failed to open subkey: {keyName}");
                 var parentKey = GetConfigKey(parentConfigKey, keyName, logger);
                 ProcessKey(subKey, parentKey, ++depth); // increment depth before the method call
             }
@@ -60,7 +60,6 @@ internal class RegistryConfigurationProvider(RegistryConfigurationOptions option
         catch (Exception ex)
         {
             logger?.LogError(ex, "An error occurred while processing the registry key: {Key}", parentConfigKey);
-            throw;
         }
     }
 

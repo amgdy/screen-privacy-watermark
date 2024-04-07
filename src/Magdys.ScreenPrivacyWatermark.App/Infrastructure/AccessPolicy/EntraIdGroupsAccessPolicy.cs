@@ -11,9 +11,11 @@ internal class EntraIdGroupsAccessPolicy(
 
     public int Order => 003;
 
+    public bool RequiresConnectivity => true;
+
     public async Task<bool> CheckAccessAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executing {Method}.", nameof(CheckAccessAsync));
 
         if (options.AllowedGroupsIdsList.Length == 0)
         {
@@ -43,9 +45,9 @@ internal class EntraIdGroupsAccessPolicy(
 
         var hasAccess = userGroupsIds.Count > 0;
 
-        logger.LogDebug("User {hasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(EntraIdGroupsAccessPolicy));
+        logger.LogDebug("User {HasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(EntraIdGroupsAccessPolicy));
 
-        logger.LogTrace("Executed {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executed {Method}.", nameof(CheckAccessAsync));
 
         return hasAccess;
     }

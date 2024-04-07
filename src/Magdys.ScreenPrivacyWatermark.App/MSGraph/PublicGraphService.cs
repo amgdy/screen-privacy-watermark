@@ -11,7 +11,7 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
 
     private static GraphServiceClient GetClient(ILogger logger, WamTokenProvider tokenProvider)
     {
-        logger.LogTrace("Executing {method}.", nameof(GetClient));
+        logger.LogTrace("Executing {Method}.", nameof(GetClient));
 
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(tokenProvider);
@@ -20,15 +20,15 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
 
         var client = new GraphServiceClient(new BaseBearerTokenAuthenticationProvider(tokenProvider));
 
-        logger.LogTrace("Executed {method}.", nameof(GetClient));
+        logger.LogTrace("Executed {Method}.", nameof(GetClient));
 
         return client;
     }
 
     public async ValueTask<User> GetCurrentUserDataAsync(params string[] properties)
     {
-        logger.LogTrace("Executing {method}.", nameof(GetCurrentUserDataAsync));
-        logger.LogDebug("Getting current user with properties: {@properties}", properties);
+        logger.LogTrace("Executing {Method}.", nameof(GetCurrentUserDataAsync));
+        logger.LogDebug("Getting current user with properties: {@Properties}", properties);
         try
         {
             var client = Client;
@@ -37,26 +37,27 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
 
             properties = properties.Length == 0 ? defaultProperties : properties;
 
-            logger.LogDebug("Requested user properties: {@properties}", properties);
+            logger.LogDebug("Requested user properties: {@Properties}", properties);
 
             var user = await client.Me.GetAsync(r =>
             {
                 r.QueryParameters.Select = properties;
             }) ?? throw new InvalidOperationException("User not found.");
 
-            logger.LogTrace("Executed {method}.", nameof(GetCurrentUserDataAsync));
+            logger.LogTrace("Executed {Method}.", nameof(GetCurrentUserDataAsync));
             return user;
         }
         catch (ODataError odataError)
         {
-            logger.LogCritical(odataError, "OData Error {@code}", odataError.Error);
-            throw;
+            logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);
         }
+
+        return null;
     }
 
     public async ValueTask<HashSet<Guid>> GetCurrentUserGroupIdsAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(GetCurrentUserGroupIdsAsync));
+        logger.LogTrace("Executing {Method}.", nameof(GetCurrentUserGroupIdsAsync));
         var userGroupsIds = new HashSet<Guid>();
 
         try
@@ -82,11 +83,10 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
         }
         catch (ODataError odataError)
         {
-            logger.LogCritical(odataError, "OData Error {@code}", odataError.Error);
-            throw;
+            logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);
         }
 
-        logger.LogTrace("Executed {method}.", nameof(GetCurrentUserGroupIdsAsync));
+        logger.LogTrace("Executed {Method}.", nameof(GetCurrentUserGroupIdsAsync));
         return userGroupsIds;
     }
 }

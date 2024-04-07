@@ -11,7 +11,7 @@ internal static partial class NativeMethods
     /// This enum contains extended window styles used for window creation.
     /// Source: https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
     /// </summary>
-    [Flags]
+    //[Flags]
     internal enum ExtendedWindowStyles
     {
         /// <summary>
@@ -60,7 +60,7 @@ internal static partial class NativeMethods
         WS_EX_PALETTEWINDOW = WS_EX_WINDOWEDGE | WS_EX_TOOLWINDOW | WS_EX_TOPMOST
     }
 
-    [Flags]
+    //[Flags]
     internal enum ProcessAccessRights
     {
         // None

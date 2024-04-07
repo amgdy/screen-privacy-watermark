@@ -1,4 +1,6 @@
-﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Extensions;
+
+namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
 
 internal class MacAddressAccessPolicyOptions : IAccessPolicyOptions
 {

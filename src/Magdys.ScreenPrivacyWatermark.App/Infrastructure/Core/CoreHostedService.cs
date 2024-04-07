@@ -6,10 +6,10 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StartAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StartAsync));
         if (cancellationToken.IsCancellationRequested)
         {
-            logger.LogTrace("Cancellation requested. Exiting {method}.", nameof(StartAsync));
+            logger.LogTrace("Cancellation requested. Exiting {Method}.", nameof(StartAsync));
             return Task.CompletedTask;
         }
 
@@ -24,20 +24,20 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
             Application.Run(new ApplicationContext(mainForm));
         }
 
-        logger.LogTrace("Executed {method}.", nameof(StartAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StartAsync));
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StopAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StopAsync));
         var openForms = Application.OpenForms.OfType<Form>().ToArray();
-        logger.LogTrace("Found {count} open forms.", openForms.Length);
+        logger.LogTrace("Found {Count} open forms.", openForms.Length);
 
         if (winFormsOptions.CloseMainFormOnly)
         {
             openForms = openForms.Where(f => f is IMainForm).ToArray();
-            logger.LogTrace("Filtered to main forms only. {count} forms remaining.", openForms.Length);
+            logger.LogTrace("Filtered to main forms only. {Count} forms remaining.", openForms.Length);
         }
 
         foreach (var form in openForms)
@@ -46,24 +46,24 @@ internal class CoreHostedService(ILogger<CoreHostedService> logger, IServiceProv
             {
                 if (form is WatermarkForm watermarkForm)
                 {
-                    logger.LogTrace("Force closing the form {text}.", watermarkForm.Text);
+                    logger.LogTrace("Force closing the form {Text}.", watermarkForm.Text);
                     watermarkForm.ForceClose();
                 }
                 else
                 {
-                    logger.LogTrace("Closing the form {text}.", form.Text);
+                    logger.LogTrace("Closing the form {Text}.", form.Text);
                     form.Close();
                 }
-                logger.LogTrace("Disposing the form {text}.", form.Text);
+                logger.LogTrace("Disposing the form {Text}.", form.Text);
                 form.Dispose();
             }
             catch (Exception ex)
             {
-                logger.LogWarning(ex, "Failed to close the form {text}.", form.Text);
+                logger.LogWarning(ex, "Failed to close the form {Text}.", form.Text);
             }
         }
 
-        logger.LogTrace("Executed {method}.", nameof(StopAsync));
+        logger.LogTrace("Executed {Method}.", nameof(StopAsync));
         Application.ExitThread();
         logger.LogTrace("Exited application thread.");
 

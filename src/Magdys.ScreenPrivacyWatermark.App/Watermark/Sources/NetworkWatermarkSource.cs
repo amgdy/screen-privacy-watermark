@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Net;
+﻿using System.Net;
 using System.Net.NetworkInformation;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
@@ -8,10 +7,7 @@ public class NetworkWatermarkSource(ILogger<NetworkWatermarkSource> logger) : IW
 {
     public bool Enabled { get; set; } = true;
 
-    public ValueTask<bool> IsConnectedAsync()
-    {
-        return ValueTask.FromResult(true);
-    }
+    public bool RequiresConnectivity => false;
 
     public async ValueTask<Dictionary<string, string>> LoadAsync(bool reload = false)
     {

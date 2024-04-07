@@ -1,4 +1,4 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Extensions;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 

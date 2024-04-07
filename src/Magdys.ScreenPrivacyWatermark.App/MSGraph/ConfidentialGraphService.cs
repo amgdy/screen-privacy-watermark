@@ -2,9 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
-using Microsoft.Graph.Models.ExternalConnectors;
 using Microsoft.Graph.Models.ODataErrors;
-using Microsoft.Kiota.Abstractions.Authentication;
 using System.Security.Principal;
 
 namespace Magdys.ScreenPrivacyWatermark.App.MSGraph;
@@ -17,7 +15,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
 
     private static GraphServiceClient GetClient(ILogger logger, GraphOptions options)
     {
-        logger.LogTrace("Executing {method}.", nameof(GetClient));
+        logger.LogTrace("Executing {Method}.", nameof(GetClient));
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(options);
 
@@ -36,24 +34,24 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
         logger.LogDebug("Graph client created.");
 
 
-        logger.LogTrace("Executed {method}.", nameof(GetClient));
+        logger.LogTrace("Executed {Method}.", nameof(GetClient));
         return client;
     }
 
     public async ValueTask<Guid> GetCurrentUserIdAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(GetCurrentUserIdAsync));
+        logger.LogTrace("Executing {Method}.", nameof(GetCurrentUserIdAsync));
 
         if (_userId.HasValue)
         {
-            logger.LogTrace("User ID already retrieved: {userId}", _userId);
+            logger.LogTrace("User ID already retrieved: {UserId}", _userId);
             return _userId.Value;
         }
 
         var windowsIdentity = WindowsIdentity.GetCurrent();
         var userSid = windowsIdentity.User?.Value;
 
-        logger.LogDebug("Current user SID: {userSid}", userSid);
+        logger.LogDebug("Current user SID: {UserSid}", userSid);
 
         var client = Client;
 
@@ -67,7 +65,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
         var user = users?.Value?.FirstOrDefault() ?? throw new InvalidOperationException("User not found.");
         if (Guid.TryParse(user.Id, out var userId))
         {
-            logger.LogDebug("Current user ID: {userId}", userId);
+            logger.LogDebug("Current user ID: {UserId}", userId);
             _userId = userId;
         }
         else
@@ -75,17 +73,17 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
             throw new InvalidOperationException("User ID is not a valid GUID.");
         }
 
-        logger.LogTrace("Executed {method}.", nameof(GetCurrentUserIdAsync));
+        logger.LogTrace("Executed {Method}.", nameof(GetCurrentUserIdAsync));
 
         return userId;
     }
 
     public async ValueTask<User> GetCurrentUserDataAsync(params string[] properties)
     {
-        logger.LogTrace("Executing {method}.", nameof(GetCurrentUserDataAsync));
+        logger.LogTrace("Executing {Method}.", nameof(GetCurrentUserDataAsync));
         ArgumentNullException.ThrowIfNull(properties);
 
-        logger.LogDebug("Getting current user with properties: {@properties}", properties);
+        logger.LogDebug("Getting current user with properties: {@Properties}", properties);
         try
         {
             var client = Client;
@@ -96,26 +94,27 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
 
             properties = properties.Length == 0 ? defaultProperties : properties;
 
-            logger.LogDebug("Requested user properties: {@properties}", properties);
+            logger.LogDebug("Requested user properties: {@Properties}", properties);
 
             var user = await client.Users[userId.ToString()].GetAsync(r =>
             {
                 r.QueryParameters.Select = properties;
             }) ?? throw new InvalidOperationException("User not found.");
 
-            logger.LogTrace("Executed {method}.", nameof(GetCurrentUserDataAsync));
+            logger.LogTrace("Executed {Method}.", nameof(GetCurrentUserDataAsync));
             return user;
         }
         catch (ODataError odataError)
         {
-            logger.LogCritical(odataError, "OData Error {@code}", odataError.Error);
-            throw;
+            logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);
         }
+
+        return null;
     }
 
     public async ValueTask<HashSet<Guid>> GetCurrentUserGroupIdsAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(GetCurrentUserGroupIdsAsync));
+        logger.LogTrace("Executing {Method}.", nameof(GetCurrentUserGroupIdsAsync));
         var userGroupsIds = new HashSet<Guid>();
 
         try
@@ -123,7 +122,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
             var userId = await GetCurrentUserIdAsync();
             var client = Client;
 
-            logger.LogDebug("Current user ID: {userId}", userId);
+            logger.LogDebug("Current user ID: {UserId}", userId);
 
             var pageIterator = PageIterator<DirectoryObject, DirectoryObjectCollectionResponse>.CreatePageIterator(
                 client: client,
@@ -144,11 +143,9 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
         }
         catch (ODataError odataError)
         {
-            logger.LogCritical(odataError, "OData Error {@code}", odataError.Error);
-            throw;
-        }
+            logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);        }
 
-        logger.LogTrace("Executed {method}.", nameof(GetCurrentUserGroupIdsAsync));
+        logger.LogTrace("Executed {Method}.", nameof(GetCurrentUserGroupIdsAsync));
         return userGroupsIds;
     }
 }

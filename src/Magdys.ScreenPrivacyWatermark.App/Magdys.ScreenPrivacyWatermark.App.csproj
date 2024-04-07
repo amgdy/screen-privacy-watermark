@@ -14,7 +14,7 @@
 
 	<PropertyGroup Label="Experimental">
 		<!--<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>-->
-		<!--<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>-->
+		<!--<ApplicationHighDpiMode>PerMonitorV2, PerMonitor</ApplicationHighDpiMode>-->
 	</PropertyGroup>
 
 	<PropertyGroup Label="Metadata">
@@ -36,10 +36,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Watermark\WatermarkManager.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="Microsoft.Extensions.Configuration" />
 		<Using Include="Microsoft.Extensions.DependencyInjection" />
 		<Using Include="Microsoft.Extensions.Hosting" />
 		<Using Include="Microsoft.Extensions.Logging" />
+		<Using Include="Magdys.ScreenPrivacyWatermark.App.Infrastructure.Exceptions" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -54,11 +59,15 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Graph" Version="5.46.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.0" />
+		<PackageReference Include="Microsoft.Graph" Version="5.47.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.1" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.1" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
 		<PackageReference Include="Polly.Core" Version="8.3.1" />
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.1.88495">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>

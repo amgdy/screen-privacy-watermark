@@ -1,4 +1,5 @@
-﻿using Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
+using Magdys.ScreenPrivacyWatermark.App.Watermark.Options;
 using Magdys.ScreenPrivacyWatermark.App.Watermark.Sources;
 using Microsoft.Extensions.Options;
 using Polly;
@@ -10,10 +11,12 @@ using System.Text.RegularExpressions;
 
 namespace Magdys.ScreenPrivacyWatermark.App.Watermark;
 
+[Obsolete("This class is obsolete, use WatermarkContext instead.")]
 public class WatermarkManager(
     ILogger<WatermarkManager> logger,
     IServiceProvider serviceProvider,
-    IOptions<WatermarkLayoutOptions> watermarkOptions)
+    IOptions<WatermarkLayoutOptions> watermarkOptions,
+    CachingService cachingService)
 {
     public Dictionary<string, string> Data { get; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -38,26 +41,26 @@ public class WatermarkManager(
     /// </returns>
     public async ValueTask<bool> IsConnectedAsync()
     {
-        logger.LogTrace("Executing {e}.", nameof(IsConnectedAsync));
+        logger.LogTrace("Executing {Method}.", nameof(IsConnectedAsync));
         var connectionStatus = new List<bool>();
 
         foreach (var source in _sources)
         {
-            connectionStatus.Add(await source.IsConnectedAsync());
+            //connectionStatus.Add(await source.IsConnectedAsync());
         }
 
         var isConnected = connectionStatus.TrueForAll(c => c);
 
         _isConnected = isConnected;
 
-        logger.LogTrace("Executed  {e}.", nameof(IsConnectedAsync));
+        logger.LogTrace("Executed {Method}.", nameof(IsConnectedAsync));
 
         return _isConnected;
     }
 
     public async ValueTask<bool> TryLoadAsync()
     {
-        logger.LogTrace("Executing {e}.", nameof(TryLoadAsync));
+        logger.LogTrace("Executing {Method}.", nameof(TryLoadAsync));
         var retryStrategyOptions = new RetryStrategyOptions
         {
             MaxRetryAttempts = 5,
@@ -89,7 +92,7 @@ public class WatermarkManager(
 
         foreach (var source in _sources)
         {
-            logger.LogTrace("Checking connection for source: {source}.", source.GetType().Name);
+            logger.LogTrace("Checking connection for source: {Source}.", source.GetType().Name);
             try
             {
                 var isConnected = await source.IsConnectedAsync();
@@ -97,11 +100,11 @@ public class WatermarkManager(
 
                 if (!isConnected)
                 {
-                    logger.LogWarning("Failed to connect to {source}", source.GetType().Name);
+                    logger.LogWarning("Failed to connect to {Source}", source.GetType().Name);
                     continue;
                 }
 
-                logger.LogTrace("Loading data from source: {source}.", source.GetType().Name);
+                logger.LogTrace("Loading data from source: {Source}.", source.GetType().Name);
                 await resiliencePipeline.ExecuteAsync(async context =>
                 {
                     var data = await source.LoadAsync();
@@ -110,24 +113,24 @@ public class WatermarkManager(
                         Data[item.Key] = item.Value;
                     }
                 });
-                logger.LogTrace("Data loaded successfully from source: {source}.", source.GetType().Name);
+                logger.LogTrace("Data loaded successfully from source: {Source}.", source.GetType().Name);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to load watermark data from {source}", source.GetType().Name);
+                logger.LogError(ex, "Failed to load watermark data from {Source}", source.GetType().Name);
                 return false;
             }
         }
 
         _isConnected = connectionStatus.TrueForAll(c => c);
 
-        logger.LogTrace("Executed  {e}.", nameof(TryLoadAsync));
+        logger.LogTrace("Executed {Method}.", nameof(TryLoadAsync));
         return true;
     }
 
     public async ValueTask<string> GetWatermarkText()
     {
-        logger.LogTrace("Executing {e}.", nameof(GetWatermarkText));
+        logger.LogTrace("Executing {Method}.", nameof(GetWatermarkText));
         if (_watermarkText is not null)
         {
             return _watermarkText;
@@ -154,7 +157,7 @@ public class WatermarkManager(
                {
                    if (!await TryLoadAsync())
                    {
-                       throw new Exception("Failed to load watermark data.");
+                       throw new InternalException("Failed to load watermark data.");
                    }
                });
 
@@ -229,7 +232,7 @@ public class WatermarkManager(
 
         _watermarkText = watermarkText;
 
-        logger.LogTrace("Executed  {e}.", nameof(GetWatermarkText));
+        logger.LogTrace("Executed  {Method}.", nameof(GetWatermarkText));
         return watermarkText;
     }
 

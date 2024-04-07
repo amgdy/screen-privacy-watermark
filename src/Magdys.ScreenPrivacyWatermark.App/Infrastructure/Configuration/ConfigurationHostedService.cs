@@ -1,10 +1,12 @@
-﻿namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration;
+﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Caching;
 
-internal class ConfigurationHostedService(ILogger<ConfigurationHostedService> logger, IConfiguration config) : IHostedService
+namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration;
+
+internal class ConfigurationHostedService(ILogger<ConfigurationHostedService> logger, IConfiguration config, CachingService cachingService) : IHostedService
 {
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("Executing {method}.", nameof(StartAsync));
+        logger.LogTrace("Executing {Method}.", nameof(StartAsync));
         var configurationRoot = (IConfigurationRoot)config;
         var providers = configurationRoot.Providers;
 
@@ -13,21 +15,33 @@ internal class ConfigurationHostedService(ILogger<ConfigurationHostedService> lo
 
         if (azureAppConfigurationProvider is null)
         {
-            logger.LogError("Azure App Configuration provider is not found.");
-            Environment.Exit(0);
+            if (cachingService.CacheItem.Configurations is not null)
+            {
+                logger.LogWarning("Azure App Configuration provider is not found, but configurations are loaded from the cache.");
+            }
+            else
+            {
+                logger.LogError("Azure App Configuration provider is not found and no configurations are loaded from the cache.");
+                Application.Exit();
+            }
         }
-
-        logger.LogTrace("Azure App Configuration provider found. Checking for keys.");
-        var loadedKeys = azureAppConfigurationProvider.GetChildKeys([], null).ToList();
-
-        if (loadedKeys.Count == 0)
+        else
         {
-            logger.LogError("Azure App Configuration provider doesn't have any keys!.");
-            Environment.Exit(0);
+            // Azure App Configuration provider is found, proceed with the remaining checks...
+            logger.LogTrace("Azure App Configuration provider found. Checking for keys.");
+            var loadedKeys = azureAppConfigurationProvider.GetChildKeys([], null).ToList();
+
+            if (loadedKeys.Count == 0)
+            {
+                logger.LogError("Azure App Configuration provider doesn't have any keys!.");
+                Application.Exit();
+            }
+
+            logger.LogTrace("Keys found in Azure App Configuration provider: {Count}.", loadedKeys.Count);
         }
 
-        logger.LogTrace("Keys found in Azure App Configuration provider: {count}.", loadedKeys.Count);
-        logger.LogTrace("Executed {method}.", nameof(StartAsync));
+
+        logger.LogTrace("Executed {Method}.", nameof(StartAsync));
         return Task.CompletedTask;
     }
 

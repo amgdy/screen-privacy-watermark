@@ -8,9 +8,11 @@ internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, Ma
 
     public int Order => 002;
 
+    public bool RequiresConnectivity => false;
+
     public Task<bool> CheckAccessAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executing {Method}.", nameof(CheckAccessAsync));
 
         var allowedMacs = options.AllowedMacAddressesArray.Select(mac => mac.ToUpper()).ToArray();
 
@@ -24,9 +26,9 @@ internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, Ma
 
         var hasAccess = commonMacs.Any();
 
-        logger.LogDebug("User {hasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(MacAddressAccessPolicy));
+        logger.LogDebug("User {HasAccess} access based on Policy {PolicyName}", hasAccess ? "granted" : "denied", nameof(MacAddressAccessPolicy));
 
-        logger.LogTrace("Executed {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executed {Method}.", nameof(CheckAccessAsync));
         return Task.FromResult(hasAccess);
     }
 }

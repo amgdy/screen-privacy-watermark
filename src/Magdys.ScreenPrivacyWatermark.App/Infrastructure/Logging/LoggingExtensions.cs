@@ -17,14 +17,16 @@ internal static class LoggingExtensions
         configureOptions?.Invoke(options);
         hostApplicationBuilder.Services.AddSingleton(options);
 
-
         var appInsightsConnectionString = hostApplicationBuilder.Configuration.GetValue<string>("ApplicationInsights:ConnectionString");
 
         var logLevel = GetNLogLevel(hostApplicationBuilder.Configuration, options);
 
         var loggingConfig = GetNLogDefaultConfig(logLevel, appInsightsConnectionString);
+
+#if DEBUG
         hostApplicationBuilder.Logging.AddDebug();
         hostApplicationBuilder.Logging.AddConsole();
+#endif
         hostApplicationBuilder.Logging.AddNLog(loggingConfig);
 
         if (appInsightsConnectionString != null)
@@ -32,13 +34,19 @@ internal static class LoggingExtensions
             hostApplicationBuilder.Services.AddApplicationInsightsTelemetryWorkerService(options =>
             {
                 options.ConnectionString = appInsightsConnectionString;
+                options.EnableAdaptiveSampling = false;
 
             });
 
             hostApplicationBuilder.Logging.AddApplicationInsights(
                 configureTelemetryConfiguration: (config) =>
-                config.ConnectionString = appInsightsConnectionString,
-                configureApplicationInsightsLoggerOptions: (options) => { }
+                {
+                    config.ConnectionString = appInsightsConnectionString;
+                },
+                configureApplicationInsightsLoggerOptions: (options) =>
+                {
+
+                }
                 );
         }
         return hostApplicationBuilder;
@@ -106,18 +114,22 @@ internal static class LoggingExtensions
     public static NLog.LogLevel GetNLogLevel(IConfiguration configuration, LoggingOptions loggingOptions)
     {
         var logLevelString = configuration.GetValue<string>(loggingOptions.LogLevelConfigKey);
-        if (!string.IsNullOrWhiteSpace(logLevelString))
+        if (string.IsNullOrWhiteSpace(logLevelString))
         {
-            try
-            {
-                return NLog.LogLevel.FromString(logLevelString);
-            }
-            catch (Exception ex)
-            {
-                LogManager.GetCurrentClassLogger().Warn(ex, "Invalid log level, setting the default to {level}.", loggingOptions.FallbackLogLevel);
-                return loggingOptions.FallbackLogLevel;
-            }
+            return loggingOptions.FallbackLogLevel;
         }
-        return loggingOptions.FallbackLogLevel;
+
+        try
+        {
+            return NLog.LogLevel.FromString(logLevelString);
+        }
+        catch (Exception ex)
+        {
+            var logger = LogManager.GetCurrentClassLogger();
+#pragma warning disable S6668 // Logging arguments should be passed to the correct parameter
+            logger?.Warn(exception: ex, message: "Invalid log level, setting the default to {Level}.", args: loggingOptions.FallbackLogLevel);
+#pragma warning restore S6668 // Logging arguments should be passed to the correct parameter
+            return loggingOptions.FallbackLogLevel;
+        }
     }
 }

@@ -8,9 +8,11 @@ internal class NetworkAccessPolicy(ILogger<NetworkAccessPolicy> logger, NetworkA
 
     public int Order => 001;
 
+    public bool RequiresConnectivity => false;
+
     public async Task<bool> CheckAccessAsync()
     {
-        logger.LogTrace("Executing {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executing {Method}.", nameof(CheckAccessAsync));
 
         // Validate IP addresses in AllowedIPsList
         var allowedIPs = new HashSet<IPAddress>();
@@ -76,7 +78,7 @@ internal class NetworkAccessPolicy(ILogger<NetworkAccessPolicy> logger, NetworkA
             }
         }
 
-        logger.LogTrace("Executed {method}.", nameof(CheckAccessAsync));
+        logger.LogTrace("Executed {Method}.", nameof(CheckAccessAsync));
 
         return false;
     }

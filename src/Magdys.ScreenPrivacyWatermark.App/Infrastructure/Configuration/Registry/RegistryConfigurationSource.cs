@@ -4,7 +4,7 @@ internal class RegistryConfigurationSource(RegistryConfigurationOptions options,
 {
     public IConfigurationProvider Build(IConfigurationBuilder builder)
     {
-        logger?.LogTrace($"Building Registry Configuration Provider");
+        logger?.LogTrace("Building Registry Configuration Provider");
         return new RegistryConfigurationProvider(options, logger);
     }
 }
