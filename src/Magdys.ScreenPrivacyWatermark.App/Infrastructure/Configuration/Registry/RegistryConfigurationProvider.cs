@@ -12,8 +12,8 @@ internal class RegistryConfigurationProvider(RegistryConfigurationOptions option
 
         using var rootKey = _options.RegistryHive switch
         {
-            RegistryHive.LocalMachine => Microsoft.Win32.Registry.LocalMachine.OpenSubKey(_options.RootKey, writable: false),
-            RegistryHive.CurrentUser => Microsoft.Win32.Registry.CurrentUser.OpenSubKey(_options.RootKey, writable: false),
+            RegistryHive.LocalMachine => Microsoft.Win32.Registry.LocalMachine.OpenSubKey(_options.RootKey!, writable: false),
+            RegistryHive.CurrentUser => Microsoft.Win32.Registry.CurrentUser.OpenSubKey(_options.RootKey!, writable: false),
             _ => throw new NotSupportedException($"Unsupported registry hive: {_options.RegistryHive}"),
         };
 

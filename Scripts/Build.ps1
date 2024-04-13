@@ -1,31 +1,31 @@
 param (
+    [Parameter(Mandatory=$true)]
+    [ValidatePattern('^\d+\.\d+\.\d+$')]
     [string]$Version = "1.0.0",
+
+    [Parameter(Mandatory=$true)]
     [bool]$SelfContained = $true,
+
+    [Parameter(Mandatory=$true)]
+    [ValidateScript({Test-Path $_ -PathType 'Container'})]
     [string]$RootTempPath = "$($env:SystemDrive)\temp"
 )
+
 try {
     Write-Host "Starting build script..." -ForegroundColor Yellow
 
     $srcPath = (Resolve-Path "..\src")
     Write-Host "Source path resolved to: $srcPath" -ForegroundColor Yellow
 
-    $msbuildEnterprisePath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe"
-    $msbuildProfessionalPath = "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"
-    $msbuildCommunityPath = "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+    $msbuildPaths = @(
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe"
+    )
 
-    $msbuildPath = $null
+    $msbuildPath = $msbuildPaths | Where-Object { Test-Path $_ } | Select-Object -First 1
 
-    # Test the paths in sequence and set the first found one as the msbuildPath
-    if (Test-Path $msbuildEnterprisePath) {
-        $msbuildPath = $msbuildEnterprisePath
-    }
-    elseif (Test-Path $msbuildProfessionalPath) {
-        $msbuildPath = $msbuildProfessionalPath
-    }
-    elseif (Test-Path $msbuildCommunityPath) {
-        $msbuildPath = $msbuildCommunityPath
-    }
-    else {
+    if ($null -eq $msbuildPath) {
         Write-Host "MSBuild path not found. Please install Visual Studio 2022." -ForegroundColor Red
         return
     }

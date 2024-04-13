@@ -2,7 +2,7 @@
 
 namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.AccessPolicy;
 
-internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, MacAddressAccessPolicyOptions options = null) : IAccessPolicy
+internal class MacAddressAccessPolicy(ILogger<MacAddressAccessPolicy> logger, MacAddressAccessPolicyOptions options = default!) : IAccessPolicy
 {
     public bool Enabled => options.AllowedMacAddressesArray.Length > 0;
 

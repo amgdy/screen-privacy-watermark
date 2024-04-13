@@ -48,7 +48,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.10.4" />
+		<PackageReference Include="Azure.Identity" Version="1.11.0" />
 		<PackageReference Include="IPNetwork2" Version="3.0.667" />
 		<PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.22.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
@@ -59,12 +59,12 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Graph" Version="5.47.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.1" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.1" />
+		<PackageReference Include="Microsoft.Graph" Version="5.48.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.2" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.2" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
 		<PackageReference Include="Polly.Core" Version="8.3.1" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.1.88495">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.2.88755">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

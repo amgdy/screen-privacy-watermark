@@ -6,7 +6,7 @@ namespace Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration.Registr
 internal class RegistryConfigurationOptions
 {
     [Required]
-    public string RootKey { get; set; }
+    public string? RootKey { get; set; }
 
     [Required]
     public RegistryHive RegistryHive { get; set; } = RegistryHive.LocalMachine;

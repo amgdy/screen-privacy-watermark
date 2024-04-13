@@ -39,7 +39,7 @@ public class WamTokenProvider(ILogger<WamTokenProvider> logger, IOptions<GraphOp
 
         var account = accounts.FirstOrDefault();
 
-        AuthenticationResult authenticationResult = null;
+        AuthenticationResult? authenticationResult = null;
 
         try
         {

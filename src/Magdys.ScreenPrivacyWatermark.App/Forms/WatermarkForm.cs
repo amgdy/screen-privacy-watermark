@@ -13,7 +13,7 @@ public partial class WatermarkForm : Form
     private readonly IOptions<WatermarkFormatOptions> _watermarkFormatSetting;
     private bool _isFormClosingSubscribed = true;
     private bool _isInitialized = false;
-    private WatermarkFormOptions _watermarkFormOptions = null;
+    private WatermarkFormOptions _watermarkFormOptions = default!;
     private const string _loggerExecutingText = "Executing {Method} for '{text}'";
     private const string _loggerExecutedText = "Executed {Method} for '{text}'";
 
@@ -43,7 +43,7 @@ public partial class WatermarkForm : Form
     {
         if (_isFormClosingSubscribed)
         {
-            FormClosing -= WatermarkForm_FormClosing;
+            FormClosing -= WatermarkForm_FormClosing!;
             _isFormClosingSubscribed = false;
         }
 
@@ -89,7 +89,7 @@ public partial class WatermarkForm : Form
         _logger.LogTrace(_loggerExecutedText, nameof(WatermarkForm_FormClosing), Text);
     }
 
-    private async void WatermarkForm_Load(object sender, EventArgs e)
+    private void WatermarkForm_Load(object sender, EventArgs e)
     {
         _logger.LogTrace(_loggerExecutingText, nameof(WatermarkForm_Load), Text);
         if (!_isInitialized)

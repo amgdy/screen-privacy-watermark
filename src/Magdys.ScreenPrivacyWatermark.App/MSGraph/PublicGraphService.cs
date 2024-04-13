@@ -52,7 +52,7 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
             logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);
         }
 
-        return null;
+        throw new InternalException("Failed to get current user data.");
     }
 
     public async ValueTask<HashSet<Guid>> GetCurrentUserGroupIdsAsync()
@@ -64,6 +64,7 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
         {
             var client = Client;
 
+#pragma warning disable CS8604 // Possible null reference argument.
             var pageIterator = PageIterator<DirectoryObject, DirectoryObjectCollectionResponse>.CreatePageIterator(
                 client: client,
                 page: await client.Me.MemberOf.GetAsync(),
@@ -76,6 +77,7 @@ internal class PublicGraphService(ILogger<PublicGraphService> logger, WamTokenPr
 
                     return true;
                 });
+#pragma warning restore CS8604 // Possible null reference argument.
 
             await pageIterator.IterateAsync();
 

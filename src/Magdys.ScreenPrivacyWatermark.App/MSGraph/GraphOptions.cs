@@ -6,7 +6,7 @@ public class GraphOptions
 
     public Guid ClientId { get; set; }
 
-    public string ClientSecret { get; set; }
+    public string? ClientSecret { get; set; }
 
     public Guid TenantId { get; set; }
 

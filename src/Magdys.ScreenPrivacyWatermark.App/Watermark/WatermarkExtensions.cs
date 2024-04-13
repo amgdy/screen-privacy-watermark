@@ -47,7 +47,7 @@ internal static class WatermarkExtensions
             section.Bind(optionsInstance);
 
             // Register the options instance with the DI container
-            hostApplicationBuilder.Services.AddSingleton(type, optionsInstance);
+            hostApplicationBuilder.Services.AddSingleton(type, optionsInstance!);
         }
 
         var accessPolicyTypes = assembly.GetTypes()

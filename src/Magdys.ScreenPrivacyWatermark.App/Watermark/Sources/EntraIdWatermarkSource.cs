@@ -45,7 +45,8 @@ internal class EntraIdWatermarkSource(ILogger<EntraIdWatermarkSource> logger,
                 foreach (var item in entraData)
                 {
                     logger.LogDebug("User data loaded: {Key}", item.Key);
-                    data.Add(item.Key, item.Value?.ToString());
+                    var value = Convert.ToString(item.Value);
+                    data.Add(item.Key, value!);
                 }
 
                 logger.LogDebug("User data loaded successfully.");

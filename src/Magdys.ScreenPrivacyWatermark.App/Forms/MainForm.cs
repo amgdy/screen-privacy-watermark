@@ -66,7 +66,7 @@ public partial class MainForm : Form, IMainForm
         }
     }
 
-    private async void MainForm_Load(object sender, EventArgs e)
+    private void MainForm_Load(object sender, EventArgs e)
     {
         _logger.LogTrace("Executing {Method}.", nameof(MainForm_Load));
 
@@ -172,7 +172,7 @@ public partial class MainForm : Form, IMainForm
     }
 
     private int _timeProcessAccessPolicyCheckFailures = 0;
-
+#pragma warning disable S3267 // Loops should be simplified with "LINQ" expressions
     private void TimeProcessAccessPolicyCheck_Tick(object sender, EventArgs e)
     {
 
@@ -200,6 +200,7 @@ public partial class MainForm : Form, IMainForm
             {
                 foreach (var processWithWindow in allProcessesWithWindows)
                 {
+
                     foreach (var regex in _allowedProcessRegexes)
                     {
                         if (regex.IsMatch(processWithWindow.ProcessName))
@@ -261,6 +262,7 @@ public partial class MainForm : Form, IMainForm
 #endif
         }
     }
+#pragma warning restore S3267 // Loops should be simplified with "LINQ" expressions
 
 
 }

@@ -1,18 +1,18 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-	<?define ProductVersion = !(bind.FileVersion.spw.exe) ?>
+	<!--<?define ProductVersion = !(bind.FileVersion.spw.exe) ?>-->
+	<?define ProductVersion = $(AppVer) ?>
 	<Package Name="Screen Privacy Watermark"
 			 Language="1033"
 			 Compressed="true"
 			 Scope="perMachine"
 			 Manufacturer="Magdy's Software"
-			 Version="$(ProductVersion)"
+			 Version="$(AppVer)"
 			 UpgradeCode="2742ce11-4343-4565-8326-23f7e440ffca">
 		<SummaryInformation Description="Screen Privacy Watermark is a Windows application designed to enhance privacy by discreetly displaying the current logged-in username or email address as a watermark." Keywords="SPW;POC" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed."
 					  AllowDowngrades="no"
 					  AllowSameVersionUpgrades="no" />
-
 
 		<MediaTemplate EmbedCab="yes" />
 		<WixVariable Id="WixUILicenseRtf" Value="DISCLAIMER.rtf" />
@@ -28,9 +28,36 @@
 		<!--Disable Modify Option in the installer-->
 		<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
 
+		<!-- Exits successfully in the case newer version are already installed -->
+		<util:ExitEarlyWithSuccess />
+
+		<!-- Closes the application if running before the overwrite -->
+		<util:CloseApplication
+			Id='CloseSPWProcess'
+			Condition='WIX_DOWNGRADE_DETECTED'
+			CloseMessage='yes'
+			EndSessionMessage='yes'
+			ElevatedCloseMessage='yes'
+			ElevatedEndSessionMessage='yes'
+			Target='spw.exe'
+			RebootPrompt='no' />
+
+
+		<!--<InstallExecuteSequence>
+			<Custom
+				Action="Wix5ExitEarlyWithSuccess_$(sys.BUILDARCHSHORT)"
+				After="FindRelatedProducts"
+				Condition="WIX_DOWNGRADE_DETECTED"/>
+			<Custom
+				Action="Wix5CloseApplications_$(sys.BUILDARCHSHORT)"
+				After="InstallValidate"
+				Condition="WIX_DOWNGRADE_DETECTED" />
+		</InstallExecuteSequence>-->
 
 		<Feature Id="Main" Title="Magdy's Screen Privacy Watermark">
-			<ComponentGroupRef Id="AppFiles" Primary="true" />
+			<!--<ComponentGroupRef Id="AppFiles" Primary="true" />-->
+			<Files Include="!(bindpath.AppDir)**">
+			</Files>
 			<Component Directory="INSTALLFOLDER" Id="RegistryEntriesPerUser" Guid="dbe104f7-62a9-4d5c-8e51-769539176aeb">
 				<!-- Disabling Taskbar Preview -->
 				<RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced">
@@ -51,33 +78,14 @@
 			</Component>
 		</Feature>
 
-		<!-- Exits successfully in the case newer version are already installed -->
-		<util:ExitEarlyWithSuccess />
-
-		<!-- Closes the application if running before the overwrite -->
-		<util:CloseApplication
-			Id='CloseSPWProcess'
-			Condition='WIX_DOWNGRADE_DETECTED'
-			CloseMessage='yes'
-			EndSessionMessage='yes'
-			ElevatedCloseMessage='yes'
-			ElevatedEndSessionMessage='yes'
-			Target='spw.exe'
-			RebootPrompt='no' />
-
-
-		<InstallExecuteSequence>
-			<Custom Action="Wix4ExitEarlyWithSuccess_X64" After="FindRelatedProducts" Condition="WIX_DOWNGRADE_DETECTED" />
-			<Custom Action="Wix4CloseApplications_X64" After="InstallValidate" Condition="WIX_DOWNGRADE_DETECTED" />
-		</InstallExecuteSequence>
-
 	</Package>
 
 	<Fragment>
 		<Icon Id="spw.ico" SourceFile="spw.ico"/>
 		<StandardDirectory Id="ProgramFiles64Folder">
 			<Directory Id="CompanyFolder" Name="Magdys">
-				<Directory Id="INSTALLFOLDER" Name="ScreenProtectionWatermark" />
+				<Directory Id="INSTALLFOLDER" Name="ScreenProtectionWatermark">
+				</Directory>
 			</Directory>
 		</StandardDirectory>
 	</Fragment>

@@ -10,8 +10,9 @@ namespace Magdys.ScreenPrivacyWatermark.App.MSGraph;
 public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, IOptions<GraphOptions> graphOptions) : IGraphService
 {
     private Guid? _userId = null;
+    private GraphServiceClient? _client;
 
-    public GraphServiceClient Client { get; } = GetClient(logger, graphOptions.Value);
+    public GraphServiceClient Client => _client ??= GetClient(logger, graphOptions.Value);
 
     private static GraphServiceClient GetClient(ILogger logger, GraphOptions options)
     {
@@ -88,7 +89,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
         {
             var client = Client;
 
-            var userId = await GetCurrentUserIdAsync();
+            var userId = _userId ??= await GetCurrentUserIdAsync();
 
             string[] defaultProperties = ["id", "displayName", "mail", "userPrincipalName", "securityIdentifier"];
 
@@ -109,7 +110,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
             logger.LogCritical(odataError, "OData Error {@Code}", odataError.Error);
         }
 
-        return null;
+        throw new InternalException("Failed to get current user data.");
     }
 
     public async ValueTask<HashSet<Guid>> GetCurrentUserGroupIdsAsync()
@@ -119,11 +120,12 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
 
         try
         {
-            var userId = await GetCurrentUserIdAsync();
+            var userId = _userId ??= await GetCurrentUserIdAsync();
             var client = Client;
 
             logger.LogDebug("Current user ID: {UserId}", userId);
 
+#pragma warning disable CS8604 // Possible null reference argument.
             var pageIterator = PageIterator<DirectoryObject, DirectoryObjectCollectionResponse>.CreatePageIterator(
                 client: client,
                 page: await client.Users[userId.ToString()].MemberOf.GetAsync(),
@@ -136,6 +138,7 @@ public class ConfidentialGraphService(ILogger<ConfidentialGraphService> logger, 
 
                     return true;
                 });
+#pragma warning restore CS8604 // Possible null reference argument.
 
             await pageIterator.IterateAsync();
 

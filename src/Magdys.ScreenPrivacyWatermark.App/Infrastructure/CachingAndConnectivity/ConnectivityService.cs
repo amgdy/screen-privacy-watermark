@@ -7,7 +7,9 @@ public class ConnectivityService(ILogger<ConnectivityService> logger)
 {
     private readonly HttpClient _client = new();
 
+#pragma warning disable S1075 // URIs should not be hardcoded
     private const string _azureAdAuthorityUrl = "https://login.microsoftonline.com";
+#pragma warning restore S1075 // URIs should not be hardcoded
 
     public async Task<bool> IsConnectedAsync()
     {

@@ -1,6 +1,4 @@
 ﻿using Magdys.ScreenPrivacyWatermark.App.Infrastructure.Configuration.Registry;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 
 namespace Magdys.ScreenPrivacyWatermark.App;
