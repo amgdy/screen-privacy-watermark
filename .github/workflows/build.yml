@@ -50,7 +50,7 @@ jobs:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.*proj') }}
           restore-keys: |
-            ${{ runner.os }}-nuget-
+            ${{ runner.os }}-nuget-${{ hashFiles('**/*.*proj') }}
 
       - name: 🔄 Restore NuGet Packages
         run: dotnet restore src
