@@ -31,7 +31,7 @@
 		<Feature Id="Main" Title="Magdy's Screen Privacy Watermark">
 			<Files Include="!(bindpath.AppDir)**"></Files>
 			<Component Directory="INSTALLFOLDER" Id="ApplicationRegistryEntries" Guid="b486d8c0-3f80-41ed-ad31-c4d4d93d7f67">
-				<RegistryKey Root="HKLM" Key="SOFTWARE\MAGDYS\ScreenPrivacyWatermark" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
+				<RegistryKey Root="HKLM" Key="SOFTWARE\MAGDYS\ScreenPrivacyWatermark" ForceCreateOnInstall="no" ForceDeleteOnUninstall="no">
 					<RegistryValue Name="AACCS" Type="string"  Value="" />
 					<RegistryValue Name="LogLevel" Type="string"  Value="Info" />
 				</RegistryKey>

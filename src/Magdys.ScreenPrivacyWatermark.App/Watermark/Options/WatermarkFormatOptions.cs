@@ -47,5 +47,7 @@ public class WatermarkFormatOptions
 #endif
     } = true;
 
+    public bool UseLegacyRendering { get; set; } = true;
+
 }
 

@@ -81,7 +81,7 @@ public partial class WatermarkForm : Form
             case CloseReason.MdiFormClosing:
             case CloseReason.UserClosing:
             case CloseReason.TaskManagerClosing:
-            //case CloseReason.ApplicationExitCall:
+                //case CloseReason.ApplicationExitCall:
                 e.Cancel = true;
                 break;
         }
@@ -111,7 +111,14 @@ public partial class WatermarkForm : Form
     {
         _logger.LogTrace(_loggerExecutingText, nameof(WatermarkForm_Paint), Text);
 
-        DrawWatermarkText(e.Graphics);
+        if (_watermarkFormatSetting.Value.UseLegacyRendering)
+        {
+            DrawWatermarkTextLegacy(e.Graphics);
+        }
+        else
+        {
+            DrawWatermarkText(e.Graphics);
+        }
 
         _logger.LogTrace(_loggerExecutedText, nameof(WatermarkForm_Paint), Text);
     }
@@ -180,6 +187,84 @@ public partial class WatermarkForm : Form
 
             // Reset the transformation for the next line
             graphics.ResetTransform();
+        }
+
+        _logger.LogTrace(_loggerExecutedText, nameof(DrawWatermarkText), Text);
+    }
+
+    private string GetFormattedWatermarkText()
+    {
+        _logger.LogTrace(_loggerExecutingText, nameof(GetFormattedWatermarkText), Text);
+
+        var watermarkText = _watermarkFormOptions.WatermarkText;
+
+        var spacer = new string(' ', _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(6, 15) : 10);
+
+        var watermarkBaseString = $"{watermarkText} {spacer}";
+
+        _logger.LogDebug("Watermark text: {_watermarkText}", watermarkBaseString);
+
+        var formatedText = new StringBuilder();
+        for (int i = 0; i < 100; i++)
+        {
+            formatedText.Append(watermarkBaseString);
+        }
+
+        _logger.LogTrace(_loggerExecutedText, nameof(GetFormattedWatermarkText), Text);
+
+        return formatedText.ToString();
+    }
+
+    private void DrawWatermarkTextLegacy(Graphics graphics)
+    {
+        _logger.LogTrace(_loggerExecutingText, nameof(DrawWatermarkText), Text);
+
+        ArgumentNullException.ThrowIfNull(graphics);
+
+        string watermarkText = GetFormattedWatermarkText();
+
+        graphics.TextRenderingHint = _watermarkFormatSetting.Value.TextRender;
+        graphics.SmoothingMode = SmoothingMode.Default;
+        graphics.InterpolationMode = InterpolationMode.Default;
+
+        using var font = new Font(_watermarkFormatSetting.Value.FontName, _watermarkFormatSetting.Value.FontSize, FontStyle.Regular, GraphicsUnit.Point);
+        using var brush = new SolidBrush(Color.FromArgb(255, _watermarkFormatSetting.Value.Color));
+        using var stringFormat = new StringFormat(StringFormatFlags.NoClip);
+
+
+        graphics.ResetTransform();
+        if (_watermarkFormatSetting.Value.UseDiagonalLines)
+        {
+            graphics.RotateTransform(-45);
+        }
+
+        double screenDiagonal = Math.Round(Math.Sqrt(Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Width, 2) + Math.Pow(_watermarkFormOptions.Screen.WorkingArea.Height, 2)));
+
+        int repeatCounts = _watermarkFormatSetting.Value.LinesCount;
+
+        int x = _watermarkFormatSetting.Value.UseDiagonalLines ? (int)screenDiagonal : Bounds.Height;
+
+        int spacer = x / repeatCounts;
+
+        int firstPoint = _watermarkFormatSetting.Value.UseDynamicsSpacing ? new Random().Next(-2, 2) : 0;
+
+        for (int i = firstPoint; i < repeatCounts + 2 + firstPoint; i++)
+        {
+            var point = new Point(-spacer * i, spacer * i);
+
+            if (_watermarkFormatSetting.Value.OutlineColor == null)
+            {
+                graphics.DrawString(watermarkText, font, brush, point, stringFormat);
+            }
+            else
+            {
+                using GraphicsPath graphicPath = new GraphicsPath();
+                using Pen pen = new Pen(_watermarkFormatSetting.Value.OutlineColor.Value, _watermarkFormatSetting.Value.OutlineWidth);
+                graphicPath.AddString(watermarkText, font.FontFamily, (int)font.Style, font.Size * 1.5f, point, stringFormat);
+
+                graphics.DrawPath(pen, graphicPath);
+                graphics.FillPath(brush, graphicPath);
+            }
         }
 
         _logger.LogTrace(_loggerExecutedText, nameof(DrawWatermarkText), Text);
