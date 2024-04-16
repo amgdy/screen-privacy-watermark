@@ -58,17 +58,17 @@ jobs:
 
       - name: 🏗️ Build App
         if: ${{ github.event.inputs.SelfContained == 'false' }}
-        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}}
+        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🏗️ Build App (Self-contained)
         if: ${{ github.event.inputs.SelfContained == 'true' }}
-        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true
+        run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🔧 Setup WiX v5
         run: dotnet tool install --global wix
 
       - name: 🏭 Build MSI
-        run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}}
+        run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 📤 Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.1
