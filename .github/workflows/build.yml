@@ -1,5 +1,3 @@
-﻿name: 🏗️ Build & Deploy
-
 on:
   workflow_dispatch:
     inputs:
@@ -12,6 +10,8 @@ on:
         required: false
         type: boolean
         default: false
+
+name: 🏗️ Build v${{ github.event.inputs.Version }}
 
 permissions:
   actions: write
