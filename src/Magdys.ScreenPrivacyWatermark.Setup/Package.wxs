@@ -28,36 +28,16 @@
 		<!--Disable Modify Option in the installer-->
 		<Property Id="ARPNOMODIFY" Value="yes" Secure="yes" />
 
-		<!-- Exits successfully in the case newer version are already installed -->
-		<util:ExitEarlyWithSuccess />
-
-		<!-- Closes the application if running before the overwrite -->
-		<util:CloseApplication
-			Id='CloseSPWProcess'
-			Condition='WIX_DOWNGRADE_DETECTED'
-			CloseMessage='yes'
-			EndSessionMessage='yes'
-			ElevatedCloseMessage='yes'
-			ElevatedEndSessionMessage='yes'
-			Target='spw.exe'
-			RebootPrompt='no' />
-
-
-		<!--<InstallExecuteSequence>
-			<Custom
-				Action="Wix5ExitEarlyWithSuccess_$(sys.BUILDARCHSHORT)"
-				After="FindRelatedProducts"
-				Condition="WIX_DOWNGRADE_DETECTED"/>
-			<Custom
-				Action="Wix5CloseApplications_$(sys.BUILDARCHSHORT)"
-				After="InstallValidate"
-				Condition="WIX_DOWNGRADE_DETECTED" />
-		</InstallExecuteSequence>-->
-
 		<Feature Id="Main" Title="Magdy's Screen Privacy Watermark">
-			<!--<ComponentGroupRef Id="AppFiles" Primary="true" />-->
-			<Files Include="!(bindpath.AppDir)**">
-			</Files>
+			<Files Include="!(bindpath.AppDir)**"></Files>
+			<Component Directory="INSTALLFOLDER" Id="ApplicationRegistryEntries" Guid="b486d8c0-3f80-41ed-ad31-c4d4d93d7f67">
+				<RegistryKey Root="HKLM" Key="SOFTWARE\MAGDYS\ScreenPrivacyWatermark" ForceCreateOnInstall="yes" ForceDeleteOnUninstall="no">
+					<RegistryValue Name="AACCS" Type="string"  Value="" />
+					<RegistryValue Name="LogLevel" Type="string"  Value="Info" />
+				</RegistryKey>
+			</Component>
+
+
 			<Component Directory="INSTALLFOLDER" Id="RegistryEntriesPerUser" Guid="dbe104f7-62a9-4d5c-8e51-769539176aeb">
 				<!-- Disabling Taskbar Preview -->
 				<RegistryKey Root="HKCU" Key="SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced">
