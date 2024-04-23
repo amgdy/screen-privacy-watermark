@@ -17,7 +17,7 @@ on:
         default: false
 
 name: 🏗️ Build & Release
-run-name: 🏗️ Build Create release draft for ${{ github.event.inputs.Version }}
+run-name: 🏗️ Build & Release ${{ github.event.inputs.Version }}
 
 
 permissions:
@@ -94,13 +94,17 @@ jobs:
         run: |
             git tag ${{ github.event.inputs.Version }}
             git push origin ${{ github.event.inputs.Version }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📝 Create release draft ${{ github.event.inputs.Version }}
         if: github.event.inputs.CreateRelease
-        run: |
-            gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
+        run: gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📤 Upload MSI to release ${{ github.event.inputs.Version }}
         if: github.event.inputs.CreateRelease
-        run: |
-            gh release upload ${{ github.event.inputs.Version }} ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
+        run: gh release upload ${{ github.event.inputs.Version }} ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
