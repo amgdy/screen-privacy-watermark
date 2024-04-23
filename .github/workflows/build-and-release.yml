@@ -68,11 +68,11 @@ jobs:
       - name: 🔄 Restore NuGet Packages
         run: dotnet restore src
 
-      - name: 🏗️ Build App
+      - name: 🏗️ Publish App (framework-dependent)
         if: ${{ github.event.inputs.SelfContained == 'false' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -p:SourceRevisionId=${{ github.sha }}
 
-      - name: 🏗️ Build App (Self-contained)
+      - name: 🏗️ Publish App (self-contained)
         if: ${{ github.event.inputs.SelfContained == 'true' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true -p:SourceRevisionId=${{ github.sha }}
 
@@ -89,21 +89,21 @@ jobs:
           name: ${{env.MSI_FILE_NAME}}
           path: ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
 
-      - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
+      - name: 🏷️ Create tag v${{ github.event.inputs.Version }}
         if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: |
-          git tag ${{ github.event.inputs.Version }}
-          git push origin ${{ github.event.inputs.Version }}
+          git tag ${{ env.TAG_NAME }}
+          git push origin ${{ env.TAG_NAME }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📝 Create release draft ${{ env.TAG_NAME }}
+      - name: 📝 Create release draft v${{ github.event.inputs.Version }}
         if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: gh release create ${{ env.TAG_NAME }} --target ${{ github.ref }} --draft --title "${{ env.TAG_NAME }}" --generate-notes --prerelease --draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📤 Upload MSI to release ${{ env.TAG_NAME }}
+      - name: 📤 Upload MSI to release v${{ github.event.inputs.Version }}
         if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: gh release upload ${{ env.TAG_NAME }} ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
         env:
