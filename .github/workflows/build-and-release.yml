@@ -10,6 +10,11 @@ on:
         required: true
         type: boolean
         default: false
+      CreateRelease:
+        description: "Create Release"
+        required: true
+        type: boolean
+        default: false
 
 name: 🏗️ Build & Release
 run-name: 🏗️ Build Create release draft for ${{ github.event.inputs.Version }}
@@ -78,21 +83,24 @@ jobs:
       - name: 🏭 Build MSI
         run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:SourceRevisionId=${{ github.sha }}
 
-      - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
-        run: |
-            git tag ${{ github.event.inputs.Version }}
-            git push origin ${{ github.event.inputs.Version }}
-
-      - name: 📝 Create release draft ${{ github.event.inputs.Version }}
-        run: |
-            gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
-
       - name: 📤 Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{env.MSI_FILE_NAME}}
           path: ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
 
+      - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
+        if: github.event.inputs.CreateRelease
+        run: |
+            git tag ${{ github.event.inputs.Version }}
+            git push origin ${{ github.event.inputs.Version }}
+
+      - name: 📝 Create release draft ${{ github.event.inputs.Version }}
+        if: github.event.inputs.CreateRelease
+        run: |
+            gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
+
       - name: 📤 Upload MSI to release ${{ github.event.inputs.Version }}
+        if: github.event.inputs.CreateRelease
         run: |
             gh release upload ${{ github.event.inputs.Version }} ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
