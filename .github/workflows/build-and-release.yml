@@ -6,27 +6,26 @@ on:
         required: true
         default: "1.0.1"
       SelfContained:
-        description: "Self-contained build"
+        description: "Create Self-contained Build"
         required: true
         type: boolean
         default: false
       CreateRelease:
-        description: "Create Release"
+        description: "Create GitHub Release"
         required: true
         type: boolean
         default: false
 
 name: 🏗️ Build & Release
-run-name: 🏗️ Build & Release ${{ github.event.inputs.Version }}
-
+run-name: 🏗️ Build & Release v${{ github.event.inputs.Version }}
 
 permissions:
   contents: write
 
-
 env:
   VERSION: ${{ github.event.inputs.Version }}
   SELF_CONTAINED: ${{ github.event.inputs.SelfContained }}
+  TAG_NAME: v${{ github.event.inputs.CreateRelease }}
 
 jobs:
   build:
@@ -42,10 +41,10 @@ jobs:
     steps:
       - name: 🦺 Validate version format
         run: |
-            if ('${{ github.event.inputs.Version }}' -notmatch '^\d+\.\d+\.\d+$') {
-                Write-Output "Version format is invalid."
-                exit 1
-            }
+          if ('${{ github.event.inputs.Version }}' -notmatch '^\d+\.\d+\.\d+$') {
+              Write-Output "Version format is invalid."
+              exit 1
+          }
 
       - name: 📥 Checkout code
         uses: actions/checkout@v4.1.2
@@ -70,11 +69,11 @@ jobs:
         run: dotnet restore src
 
       - name: 🏗️ Build App
-        if: ${{ github.event.inputs.SelfContained == 'false' }}
+        if: github.event.inputs.SelfContained == false
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🏗️ Build App (Self-contained)
-        if: ${{ github.event.inputs.SelfContained == 'true' }}
+        if: github.event.inputs.SelfContained
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🔧 Setup WiX v5
@@ -84,27 +83,28 @@ jobs:
         run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 📤 Upload a Build Artifact
+        if: github.event.inputs.CreateRelease == false
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{env.MSI_FILE_NAME}}
-          path: ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
+          path: ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
 
       - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
         if: github.event.inputs.CreateRelease
         run: |
-            git tag ${{ github.event.inputs.Version }}
-            git push origin ${{ github.event.inputs.Version }}
+          git tag ${{ github.event.inputs.Version }}
+          git push origin ${{ github.event.inputs.Version }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📝 Create release draft ${{ github.event.inputs.Version }}
+      - name: 📝 Create release draft ${{ env.TAG_NAME }}
         if: github.event.inputs.CreateRelease
-        run: gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
+        run: gh release create ${{ env.TAG_NAME }} --target ${{ github.ref }} --draft --title "${{ env.TAG_NAME }}" --generate-notes --prerelease --draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 📤 Upload MSI to release ${{ github.event.inputs.Version }}
+      - name: 📤 Upload MSI to release ${{ env.TAG_NAME }}
         if: github.event.inputs.CreateRelease
-        run: gh release upload ${{ github.event.inputs.Version }} ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
+        run: gh release upload ${{ env.TAG_NAME }} ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
