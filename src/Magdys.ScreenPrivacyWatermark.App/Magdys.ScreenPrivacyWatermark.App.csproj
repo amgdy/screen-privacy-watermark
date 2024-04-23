@@ -25,9 +25,9 @@
 		<Description>Screen Privacy Watermark is a Windows application designed to enhance privacy by discreetly displaying the current logged-in username or email address as a watermark.</Description>
 		<Copyright>© 2024</Copyright>
 		<ApplicationIcon>Assets\spw.ico</ApplicationIcon>
-		<AssemblyVersion>1.0.0</AssemblyVersion>
-		<FileVersion>1.0.0</FileVersion>
-		<ProductVersion>1.0.0</ProductVersion>
+		<AssemblyVersion>1.0.1</AssemblyVersion>
+		<FileVersion>1.0.1</FileVersion>
+		<ProductVersion>1.0.1</ProductVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Label="LanguageSettings">
@@ -48,7 +48,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Identity" Version="1.11.0" />
+		<PackageReference Include="Azure.Identity" Version="1.11.2" />
 		<PackageReference Include="IPNetwork2" Version="3.0.667" />
 		<PackageReference Include="Microsoft.ApplicationInsights.NLogTarget" Version="2.22.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.SnapshotCollector" Version="1.4.6" />
@@ -59,12 +59,12 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.22.0" />
 		<PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Graph" Version="5.48.0" />
-		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.2" />
-		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.2" />
+		<PackageReference Include="Microsoft.Graph" Version="5.49.0" />
+		<PackageReference Include="Microsoft.Identity.Client.Broker" Version="4.60.3" />
+		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.60.3" />
 		<PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
 		<PackageReference Include="Polly.Core" Version="8.3.1" />
-		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.23.2.88755">
+		<PackageReference Include="SonarAnalyzer.CSharp" Version="9.24.0.89429">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>

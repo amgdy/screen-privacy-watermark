@@ -8,14 +8,11 @@ internal class AppConfigurationOptions
 
     public ILogger? Logger { get; set; } = null;
 
-    public bool EnableCommandLineConfiguration { get; set; } = false;
+    public bool EnableCommandLineConfiguration { get; set; } = true;
 
     public bool EnableWindowsRegistryConfiguration { get; set; } = true;
 
     public bool EnableAzureAppConfiguration { get; set; } = true;
 
-    public bool EnableCachingEncryption { get; set; } = false;
-
-    [Required]
     public string AzureAppConfigCSKey { get; set; } = "AACCS";
 }

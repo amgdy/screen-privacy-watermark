@@ -3,20 +3,21 @@ on:
     inputs:
       Version:
         description: "Version number"
-        required: false
-        default: "1.0.0"
+        required: true
+        default: "1.0.1"
       SelfContained:
         description: "Self-contained build"
-        required: false
+        required: true
         type: boolean
         default: false
 
-name: 🏗️ Build
+name: 🏗️ Build & Release
+run-name: 🏗️ Build Create release draft for ${{ github.event.inputs.Version }}
+
 
 permissions:
-  actions: write
-  contents: read
-  security-events: write
+  contents: write
+
 
 env:
   VERSION: ${{ github.event.inputs.Version }}
@@ -34,6 +35,13 @@ jobs:
       MSI_FILE_NAME: SPW-${{github.event.inputs.Version}}-Setup
 
     steps:
+      - name: 🦺 Validate version format
+        run: |
+            if ('${{ github.event.inputs.Version }}' -notmatch '^\d+\.\d+\.\d+$') {
+                Write-Output "Version format is invalid."
+                exit 1
+            }
+
       - name: 📥 Checkout code
         uses: actions/checkout@v4.1.2
 
@@ -42,7 +50,7 @@ jobs:
           echo "APP_PROJECT_OUTPUT=${{ runner.temp }}\app" | Out-File -FilePath $env:GITHUB_ENV -Append
           echo "MSI_PROJECT_OUTPUT=${{ runner.temp }}\msi" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-      - name: 📝 List All env
+      - name: 📃 List All env
         run: Get-ChildItem env:* | Sort-Object -Property Name
 
       - name: 📦 Cache NuGet packages
@@ -70,8 +78,21 @@ jobs:
       - name: 🏭 Build MSI
         run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:SourceRevisionId=${{ github.sha }}
 
+      - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
+        run: |
+            git tag ${{ github.event.inputs.Version }}
+            git push origin ${{ github.event.inputs.Version }}
+
+      - name: 📝 Create release draft ${{ github.event.inputs.Version }}
+        run: |
+            gh release create ${{ github.event.inputs.Version }} --target ${{ github.ref }} --draft --title "${{ github.event.inputs.version }}" --generate-notes --prerelease --draft
+
       - name: 📤 Upload a Build Artifact
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{env.MSI_FILE_NAME}}
           path: ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi
+
+      - name: 📤 Upload MSI to release ${{ github.event.inputs.Version }}
+        run: |
+            gh release upload ${{ github.event.inputs.Version }} ${{env.MSI_PROJECT_OUTPUT}}/${{env.MSI_FILE_NAME}}.msi

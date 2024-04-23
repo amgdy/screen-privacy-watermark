@@ -46,7 +46,6 @@ internal static class Program
                 })
                 .ConfigureAppConfiguration(options =>
                 {
-                    options.EnableCommandLineConfiguration = false;
                     options.Logger = loggerFactory.CreateLogger("AppConfiguration");
                 })
                 .ConfigureLogging(options =>

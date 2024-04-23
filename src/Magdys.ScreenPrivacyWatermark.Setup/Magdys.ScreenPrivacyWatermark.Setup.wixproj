@@ -3,7 +3,7 @@
     <AppDir>../Magdys.ScreenPrivacyWatermark.App/bin/$(Configuration)/net8.0-windows</AppDir>
     <HarvestDirectorySuppressUniqueIds>true</HarvestDirectorySuppressUniqueIds>
     <InstallerPlatform>x64</InstallerPlatform>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <OutputName>SPW-$(Version)-Setup</OutputName>
   </PropertyGroup>
   <PropertyGroup>

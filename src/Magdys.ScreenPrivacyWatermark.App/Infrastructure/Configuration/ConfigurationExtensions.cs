@@ -20,7 +20,10 @@ internal static class ConfigurationExtensions
 
         if (configOptions.EnableCommandLineConfiguration)
         {
-            hostApplicationBuilder.Configuration.AddCommandLine(configOptions.Arguments);
+            hostApplicationBuilder.Configuration.AddCommandLine(options =>
+            {
+                options.Args = configOptions.Arguments;
+            });
         }
 
         if (configOptions.EnableWindowsRegistryConfiguration)
@@ -38,8 +41,6 @@ internal static class ConfigurationExtensions
         {
             ConfigureAzureAppConfiguration(hostApplicationBuilder, configOptions, cachingService, connectivityService);
         }
-
-        hostApplicationBuilder.Services.AddHostedService<ConfigurationHostedService>();
 
         return hostApplicationBuilder;
     }
