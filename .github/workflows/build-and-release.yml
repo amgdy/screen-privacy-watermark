@@ -69,11 +69,11 @@ jobs:
         run: dotnet restore src
 
       - name: 🏗️ Build App
-        if: ${{ github.event.inputs.SelfContained == false }}
+        if: ${{ github.event.inputs.SelfContained == 'false' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🏗️ Build App (Self-contained)
-        if: ${{ github.event.inputs.SelfContained == true }}
+        if: ${{ github.event.inputs.SelfContained == 'true' }}
         run: dotnet publish ${{env.APP_PROJECT_PATH}} -c=Release -o=${{env.APP_PROJECT_OUTPUT}} --p:FileVersion=${{env.VERSION}} --p:AssemblyVersion=${{env.VERSION}} --p:Version=${{env.VERSION}} -r=win-x64 --self-contained=true -p:SourceRevisionId=${{ github.sha }}
 
       - name: 🔧 Setup WiX v5
@@ -83,14 +83,14 @@ jobs:
         run: dotnet build ${{env.MSI_PROJECT_PATH}} -c=Release -o=${{env.MSI_PROJECT_OUTPUT}} -p:Version=${{env.VERSION}} -p:AppDir=${{env.APP_PROJECT_OUTPUT}} -p:OutputName=${{env.MSI_FILE_NAME}} -p:SourceRevisionId=${{ github.sha }}
 
       - name: 📤 Upload a Build Artifact
-        if: ${{ github.event.inputs.CreateRelease == false }}
+        if: ${{ github.event.inputs.CreateRelease == 'false' }}
         uses: actions/upload-artifact@v4.3.1
         with:
           name: ${{env.MSI_FILE_NAME}}
           path: ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
 
       - name: 🏷️ Create tag ${{ github.event.inputs.Version }}
-        if: ${{ github.event.inputs.CreateRelease == true }}
+        if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: |
           git tag ${{ github.event.inputs.Version }}
           git push origin ${{ github.event.inputs.Version }}
@@ -98,13 +98,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📝 Create release draft ${{ env.TAG_NAME }}
-        if: ${{ github.event.inputs.CreateRelease == true }}
+        if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: gh release create ${{ env.TAG_NAME }} --target ${{ github.ref }} --draft --title "${{ env.TAG_NAME }}" --generate-notes --prerelease --draft
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 📤 Upload MSI to release ${{ env.TAG_NAME }}
-        if: ${{ github.event.inputs.CreateRelease == true }}
+        if: ${{ github.event.inputs.CreateRelease == 'true' }}
         run: gh release upload ${{ env.TAG_NAME }} ${{env.MSI_PROJECT_OUTPUT}}\${{env.MSI_FILE_NAME}}.msi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
